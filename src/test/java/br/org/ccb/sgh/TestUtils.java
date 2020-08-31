@@ -14,6 +14,7 @@ import br.org.ccb.sgh.entity.Room;
 import br.org.ccb.sgh.entity.Status;
 import br.org.ccb.sgh.entity.SupportHouse;
 import br.org.ccb.sgh.http.dto.AddressDto;
+import br.org.ccb.sgh.http.dto.GuestDto;
 import br.org.ccb.sgh.http.dto.InnerObjectDto;
 import br.org.ccb.sgh.http.dto.RoomDto;
 import br.org.ccb.sgh.http.dto.SupportHouseDto;
@@ -22,15 +23,15 @@ public final class TestUtils {
 
 	public static List<SupportHouse> createSupportHouseList() {
 		return Stream.of(
-				SupportHouse.builder().id(1l).name("Test").cnpj("1111111111/1111").address(createAddressList().get(0))
+				SupportHouse.builder().id(1l).name("Test").cnpj("48183050000188").address(createAddressList().get(0))
 						.build(),
-				SupportHouse.builder().id(2l).name("Test2").cnpj("222222222/2222").address(createAddressList().get(1))
+				SupportHouse.builder().id(2l).name("Test2").cnpj("39313910000160").address(createAddressList().get(1))
 						.build())
 				.collect(Collectors.toList());
 	}
 
 	public static SupportHouseDto createSupportHouseDto() {
-		return SupportHouseDto.builder().name("Test").cnpj("1111111111/1111").address(createAddressDto()).build();
+		return SupportHouseDto.builder().name("Test").cnpj("48183050000188").address(createAddressDto()).build();
 	}
 
 	public static AddressDto createAddressDto() {
@@ -39,11 +40,11 @@ public final class TestUtils {
 	}
 
 	public static List<Room> createRoomList() {
-		return Stream.of(
-				Room.builder().id(1l).name("Room 1").floor("1").number("1A").numberOfBeds(4)
-						.supportHouse(SupportHouse.builder().id(createSupportHouseList().get(0).getId()).build()).build(),
+		return Stream.of(Room.builder().id(1l).name("Room 1").floor("1").number("1A").numberOfBeds(4)
+				.supportHouse(SupportHouse.builder().id(createSupportHouseList().get(0).getId()).build()).build(),
 				Room.builder().id(2l).name("Room 2").floor("1").number("1B").numberOfBeds(2)
-						.supportHouse(SupportHouse.builder().id(createSupportHouseList().get(1).getId()).build()).build())
+						.supportHouse(SupportHouse.builder().id(createSupportHouseList().get(1).getId()).build())
+						.build())
 				.collect(Collectors.toList());
 	}
 
@@ -61,15 +62,17 @@ public final class TestUtils {
 	}
 
 	public static List<Guest> createGuestList() {
-		return Stream.of(Guest.builder().id(1l).name("Guest 1").type(createGuestTypeList().get(0))
-				.address(createAddressList().get(0)).dateOfBirth(LocalDate.now()).phoneNumber("1166987450")
-				.celNumber("11988887745").ministery(Boolean.TRUE).baptized(Boolean.TRUE).baptismDate(LocalDate.now())
-				.prayingHouse("Central").observation("observation").reservations(createReservationList()).build(),
-				Guest.builder().id(1l).name("Guest 2").type(createGuestTypeList().get(1))
-						.address(createAddressList().get(1)).dateOfBirth(LocalDate.now()).phoneNumber("1166987451")
-						.celNumber("11988887746").ministery(Boolean.FALSE).baptized(Boolean.FALSE)
-						.baptismDate(LocalDate.now()).prayingHouse("Central").observation("observation")
-						.reservations(createReservationList()).build())
+		return Stream.of(
+				Guest.builder().id(1l).name("Guest 1").type(createGuestTypeList().get(0))
+						.address(createAddressList().get(0)).dateOfBirth(LocalDate.now()).phoneNumber("1658741258")
+						.rg("126547854").cpf("19290228083").celNumber("18966547890").ministery(Boolean.TRUE)
+						.baptized(Boolean.TRUE).dateOfBaptism(LocalDate.now()).prayingHouse("Central")
+						.observation("observation").build(),
+				Guest.builder().id(2l).name("Guest 2").type(createGuestTypeList().get(1))
+						.address(createAddressList().get(1)).dateOfBirth(LocalDate.now()).rg("226547854")
+						.cpf("24953683013").phoneNumber("1166987451").celNumber("11988887746").ministery(Boolean.FALSE)
+						.baptized(Boolean.FALSE).dateOfBaptism(LocalDate.now()).prayingHouse("Central")
+						.observation("observation").build())
 				.collect(Collectors.toList());
 	}
 
@@ -107,4 +110,10 @@ public final class TestUtils {
 		return InnerObjectDto.builder().id(id).build();
 	}
 
+	public static GuestDto createGuestDto() {
+		return GuestDto.builder().name("Guest 1").type(1l).address(createAddressDto()).dateOfBirth(LocalDate.now())
+				.dateOfBaptism(LocalDate.now()).rg("126547854").cpf("19290228083").phoneNumber("1658741258")
+				.celNumber("18966547890").ministery(true).baptized(true).prayingHouse("Praying House 1")
+				.observation("Observation").build();
+	}
 }
