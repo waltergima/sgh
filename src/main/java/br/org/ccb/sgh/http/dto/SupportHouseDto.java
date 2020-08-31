@@ -6,6 +6,8 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
+import org.hibernate.validator.constraints.br.CNPJ;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,7 +24,7 @@ public class SupportHouseDto implements Serializable {
 	@NotBlank
 	@Size(min = 1, max = 255)
 	private String name;
-	@Size(min = 14, max = 14)
+	@CNPJ
 	private String cnpj;
 	@Valid
 	private AddressDto address;
