@@ -2,6 +2,8 @@ package br.org.ccb.sgh.controller;
 
 import java.net.URI;
 
+import javax.validation.constraints.Min;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +28,7 @@ import br.org.ccb.sgh.service.SupportHouseService;
 
 @RestController
 @RequestMapping("/supporthouses")
+@Validated
 public class SupportHouseController {
 
 	@Autowired
@@ -33,7 +36,7 @@ public class SupportHouseController {
 
 	@CrossOrigin(origins = "*", methods = { RequestMethod.GET, RequestMethod.OPTIONS })
 	@GetMapping
-	public ResponseEntity<Page<SupportHouse>> findAll(@RequestParam(value = "id", required = false) Long id,
+	public ResponseEntity<Page<SupportHouse>> findAll(@Min(1) @RequestParam(value = "id", required = false) Long id,
 			@RequestParam(value = "name", required = false) String name,
 			@RequestParam(value = "cnpj", required = false) String cnpj,
 			@RequestParam(value = "city", required = false) String city,

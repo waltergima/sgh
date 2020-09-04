@@ -17,6 +17,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.Locale;
+
 import org.hibernate.ObjectNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,6 +31,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.servlet.i18n.FixedLocaleResolver;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -43,6 +46,7 @@ import br.org.ccb.sgh.service.SupportHouseService;
 class SupportHouseControllerTest {
 
 	private static final String URL = "/supporthouses";
+	private static final String BY_INVALID_ID = URL.concat("/a");
 	private static final String BY_ID = URL.concat("/1");
 	private MockMvc mockMvc;
 
@@ -55,7 +59,8 @@ class SupportHouseControllerTest {
 	@BeforeEach
 	void setUp() {
 		this.mockMvc = MockMvcBuilders.standaloneSetup(supportHouseController)
-				.setControllerAdvice(new ResourceExceptionHandler()).build();
+				.setControllerAdvice(new ResourceExceptionHandler())
+				.setLocaleResolver(new FixedLocaleResolver(new Locale("pt", "BR"))).build();
 		MockitoAnnotations.initMocks(this);
 	}
 
@@ -67,6 +72,19 @@ class SupportHouseControllerTest {
 				.andExpect(jsonPath("timestamp", notNullValue())).andExpect(jsonPath("status", is(400)))
 				.andExpect(jsonPath("message", is("Não é possível remover este registro pois está sendo utilizado")))
 				.andExpect(jsonPath("error", is("Error"))).andExpect(jsonPath("path", is(URL)));
+	}
+
+	@Test
+	void findAllInvalidIdTest() throws Exception {
+		when(this.supportHouseService.findAll(any(SupportHouseRequestParamsDto.class)))
+				.thenReturn(new PageImpl<>(TestUtils.createSupportHouseList()));
+		this.mockMvc.perform(get(URL.concat("?id=a")).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest()).andExpect(jsonPath("timestamp", notNullValue()))
+				.andExpect(jsonPath("status", is(400)))
+				.andExpect(jsonPath("error", is(
+						"Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; nested exception is java.lang.NumberFormatException: For input string: \"a\"")))
+				.andExpect(jsonPath("message", is("Valor incorreto passado para o parâmetro: id")))
+				.andExpect(jsonPath("path", is(URL)));
 	}
 
 	@Test
@@ -84,8 +102,7 @@ class SupportHouseControllerTest {
 				.andExpect(jsonPath("$.content.[0].address.number", is("1F")))
 				.andExpect(jsonPath("$.content.[0].address.state", is("SP")))
 				.andExpect(jsonPath("$.content.[0].address.zipCode", is("11111111")))
-				.andExpect(jsonPath("$.content.[1].id", is(2)))
-				.andExpect(jsonPath("$.content.[1].name", is("Test2")))
+				.andExpect(jsonPath("$.content.[1].id", is(2))).andExpect(jsonPath("$.content.[1].name", is("Test2")))
 				.andExpect(jsonPath("$.content.[1].cnpj", is("39313910000160")))
 				.andExpect(jsonPath("$.content.[1].address.id", is(2)))
 				.andExpect(jsonPath("$.content.[1].address.street", is("Street2")))
@@ -109,19 +126,27 @@ class SupportHouseControllerTest {
 	}
 
 	@Test
+	void findByInvalidIdTest() throws Exception {
+		when(this.supportHouseService.byId(1l))
+				.thenThrow(new ObjectNotFoundException(1l, SupportHouse.class.getName()));
+		this.mockMvc.perform(get(BY_INVALID_ID).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest()).andExpect(jsonPath("timestamp", notNullValue()))
+				.andExpect(jsonPath("status", is(400)))
+				.andExpect(jsonPath("error", is(
+						"Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; nested exception is java.lang.NumberFormatException: For input string: \"a\"")))
+				.andExpect(jsonPath("message", is("Valor incorreto passado para o parâmetro: id")))
+				.andExpect(jsonPath("path", is(BY_INVALID_ID)));
+	}
+
+	@Test
 	void findByIdSuccessTest() throws Exception {
 		when(this.supportHouseService.byId(1l)).thenReturn(TestUtils.createSupportHouseList().get(0));
 		this.mockMvc.perform(get(BY_ID).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
-				.andExpect(jsonPath("id", is(1)))
-				.andExpect(jsonPath("name", is("Test")))
-				.andExpect(jsonPath("cnpj", is("48183050000188")))
-				.andExpect(jsonPath("address.id", is(1)))
-				.andExpect(jsonPath("address.street", is("Street")))
-				.andExpect(jsonPath("address.city", is("Test")))
-				.andExpect(jsonPath("address.district", is("District")))
-				.andExpect(jsonPath("address.number", is("1F")))
-				.andExpect(jsonPath("address.state", is("SP")))
-				.andExpect(jsonPath("address.zipCode", is("11111111")));
+				.andExpect(jsonPath("id", is(1))).andExpect(jsonPath("name", is("Test")))
+				.andExpect(jsonPath("cnpj", is("48183050000188"))).andExpect(jsonPath("address.id", is(1)))
+				.andExpect(jsonPath("address.street", is("Street"))).andExpect(jsonPath("address.city", is("Test")))
+				.andExpect(jsonPath("address.district", is("District"))).andExpect(jsonPath("address.number", is("1F")))
+				.andExpect(jsonPath("address.state", is("SP"))).andExpect(jsonPath("address.zipCode", is("11111111")));
 	}
 
 	@Test
@@ -135,6 +160,37 @@ class SupportHouseControllerTest {
 				.andExpect(jsonPath("status", is(400)))
 				.andExpect(jsonPath("message", is("Não é possível remover este registro pois está sendo utilizado")))
 				.andExpect(jsonPath("error", is("Error"))).andExpect(jsonPath("path", is(URL)));
+	}
+
+	@Test
+	void saveInvalidNameTest() throws Exception {
+		SupportHouseDto supportHouseDto = TestUtils.createSupportHouseDto();
+		supportHouseDto.setName(supportHouseDto.getName().repeat(255));
+		this.mockMvc
+				.perform(post(URL).content(new ObjectMapper().writeValueAsString(supportHouseDto))
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isUnprocessableEntity()).andExpect(jsonPath("timestamp", notNullValue()))
+				.andExpect(jsonPath("status", is(422)))
+				.andExpect(jsonPath("error", is(
+						"Validation failed for argument [0] in public org.springframework.http.ResponseEntity<java.lang.Void> br.org.ccb.sgh.controller.SupportHouseController.save(br.org.ccb.sgh.http.dto.SupportHouseDto): [Field error in object 'supportHouseDto' on field 'name': rejected value [TestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTest]; codes [Size.supportHouseDto.name,Size.name,Size.java.lang.String,Size]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [supportHouseDto.name,name]; arguments []; default message [name],255,1]; default message [tamanho deve ser entre 1 e 255]] ")))
+				.andExpect(jsonPath("message", is("Erro de validação: name: tamanho deve ser entre 1 e 255 ")))
+				.andExpect(jsonPath("path", is(URL)));
+	}
+
+	@Test
+	void saveInvalidCnpjTest() throws Exception {
+		SupportHouseDto supportHouseDto = TestUtils.createSupportHouseDto();
+		supportHouseDto.setCnpj("11223344556677");
+		this.mockMvc
+				.perform(post(URL).content(new ObjectMapper().writeValueAsString(supportHouseDto))
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isUnprocessableEntity()).andExpect(jsonPath("timestamp", notNullValue()))
+				.andExpect(jsonPath("status", is(422)))
+				.andExpect(jsonPath("error", is(
+						"Validation failed for argument [0] in public org.springframework.http.ResponseEntity<java.lang.Void> br.org.ccb.sgh.controller.SupportHouseController.save(br.org.ccb.sgh.http.dto.SupportHouseDto): [Field error in object 'supportHouseDto' on field 'cnpj': rejected value [11223344556677]; codes [CNPJ.supportHouseDto.cnpj,CNPJ.cnpj,CNPJ.java.lang.String,CNPJ]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [supportHouseDto.cnpj,cnpj]; arguments []; default message [cnpj]]; default message [número do registro de contribuinte corporativo brasileiro (CNPJ) inválido]] ")))
+				.andExpect(jsonPath("message", is(
+						"Erro de validação: cnpj: número do registro de contribuinte corporativo brasileiro (CNPJ) inválido ")))
+				.andExpect(jsonPath("path", is(URL)));
 	}
 
 	@Test
@@ -162,6 +218,35 @@ class SupportHouseControllerTest {
 						is("No row with the given identifier exists: [br.org.ccb.sgh.entity.SupportHouse#1]")))
 				.andExpect(jsonPath("path", is(BY_ID)));
 
+	}
+
+	@Test
+	void updateInvalidNameTest() throws Exception {
+		SupportHouseDto supportHouseDto = TestUtils.createSupportHouseDto();
+		supportHouseDto.setName(supportHouseDto.getName().repeat(255));
+		this.mockMvc
+				.perform(put(BY_ID).content(new ObjectMapper().writeValueAsString(supportHouseDto))
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isUnprocessableEntity()).andExpect(jsonPath("status", is(422)))
+				.andExpect(jsonPath("error", is(
+						"Validation failed for argument [1] in public org.springframework.http.ResponseEntity<java.lang.Void> br.org.ccb.sgh.controller.SupportHouseController.update(java.lang.Long,br.org.ccb.sgh.http.dto.SupportHouseDto): [Field error in object 'supportHouseDto' on field 'name': rejected value [TestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTest]; codes [Size.supportHouseDto.name,Size.name,Size.java.lang.String,Size]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [supportHouseDto.name,name]; arguments []; default message [name],255,1]; default message [tamanho deve ser entre 1 e 255]] ")))
+				.andExpect(jsonPath("message", is("Erro de validação: name: tamanho deve ser entre 1 e 255 ")))
+				.andExpect(jsonPath("path", is(BY_ID)));
+	}
+
+	@Test
+	void updateInvalidCnpjTest() throws Exception {
+		SupportHouseDto supportHouseDto = TestUtils.createSupportHouseDto();
+		supportHouseDto.setCnpj("11223344556677");
+		this.mockMvc
+				.perform(put(BY_ID).content(new ObjectMapper().writeValueAsString(supportHouseDto))
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isUnprocessableEntity()).andExpect(jsonPath("status", is(422)))
+				.andExpect(jsonPath("error", is(
+						"Validation failed for argument [1] in public org.springframework.http.ResponseEntity<java.lang.Void> br.org.ccb.sgh.controller.SupportHouseController.update(java.lang.Long,br.org.ccb.sgh.http.dto.SupportHouseDto): [Field error in object 'supportHouseDto' on field 'cnpj': rejected value [11223344556677]; codes [CNPJ.supportHouseDto.cnpj,CNPJ.cnpj,CNPJ.java.lang.String,CNPJ]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [supportHouseDto.cnpj,cnpj]; arguments []; default message [cnpj]]; default message [número do registro de contribuinte corporativo brasileiro (CNPJ) inválido]] ")))
+				.andExpect(jsonPath("message", is(
+						"Erro de validação: cnpj: número do registro de contribuinte corporativo brasileiro (CNPJ) inválido ")))
+				.andExpect(jsonPath("path", is(BY_ID)));
 	}
 
 	@Test

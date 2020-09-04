@@ -3,6 +3,9 @@ package br.org.ccb.sgh.controller;
 import java.net.URI;
 import java.time.LocalDate;
 
+import javax.validation.constraints.Size;
+
+import org.hibernate.validator.constraints.br.CPF;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -28,6 +31,7 @@ import br.org.ccb.sgh.service.GuestService;
 
 @RestController
 @RequestMapping("/guests")
+@Validated
 public class GuestController {
 
 	@Autowired
@@ -39,13 +43,13 @@ public class GuestController {
 			@RequestParam(value = "name", required = false) String name,
 			@DateTimeFormat(pattern = "dd/MM/yyyy") @RequestParam(value = "dateOfBirth", required = false) LocalDate dateOfBirth,
 			@DateTimeFormat(pattern = "dd/MM/yyyy") @RequestParam(value = "dateOfBaptism", required = false) LocalDate dateOfBaptism,
-			@RequestParam(value = "rg", required = false) String rg,
-			@RequestParam(value = "cpf", required = false) String cpf,
-			@RequestParam(value = "phoneNumber", required = false) String phoneNumber,
-			@RequestParam(value = "celNumber", required = false) String celNumber,
+			@RequestParam(value = "rg", required = false) @Size(min = 1, max = 9) String rg,
+			@RequestParam(value = "cpf", required = false) @CPF String cpf,
+			@RequestParam(value = "phoneNumber", required = false) @Size(min = 1, max = 11) String phoneNumber,
+			@RequestParam(value = "celNumber", required = false) @Size(min = 1, max = 11) String celNumber,
 			@RequestParam(value = "ministery", required = false) Boolean ministery,
-			@RequestParam(value = "prayingHouse", required = false) String prayingHouse,
-			@RequestParam(value = "observation", required = false) String observation,
+			@RequestParam(value = "prayingHouse", required = false) @Size(min = 1, max = 255) String prayingHouse,
+			@RequestParam(value = "observation", required = false) @Size(min = 1) String observation,
 			@RequestParam(value = "reservationId", required = false) Long reservationId,
 			@RequestParam(value = "offset", defaultValue = "0") Integer offset,
 			@RequestParam(value = "limit", defaultValue = "10") Integer limit,

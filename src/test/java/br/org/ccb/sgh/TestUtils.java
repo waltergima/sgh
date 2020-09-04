@@ -14,8 +14,10 @@ import br.org.ccb.sgh.entity.Room;
 import br.org.ccb.sgh.entity.Status;
 import br.org.ccb.sgh.entity.SupportHouse;
 import br.org.ccb.sgh.http.dto.AddressDto;
+import br.org.ccb.sgh.http.dto.ContactDto;
 import br.org.ccb.sgh.http.dto.GuestDto;
 import br.org.ccb.sgh.http.dto.InnerObjectDto;
+import br.org.ccb.sgh.http.dto.ReservationDto;
 import br.org.ccb.sgh.http.dto.RoomDto;
 import br.org.ccb.sgh.http.dto.SupportHouseDto;
 
@@ -53,11 +55,11 @@ public final class TestUtils {
 				Reservation.builder().id(1l).initialDate(LocalDate.now()).finalDate(LocalDate.now())
 						.checkinDate(LocalDate.now()).checkoutDate(LocalDate.now()).observation("Observation")
 						.status(Status.CONFIRMED).guests(createGuestList()).contact(createContactList().get(0))
-						.supportHouse(createSupportHouseList().get(0)).build(),
+						.build(),
 				Reservation.builder().id(2l).initialDate(LocalDate.now()).finalDate(LocalDate.now())
 						.checkinDate(LocalDate.now()).checkoutDate(LocalDate.now()).observation("Observation 2")
 						.status(Status.PAUSED).guests(createGuestList()).contact(createContactList().get(1))
-						.supportHouse(createSupportHouseList().get(1)).build())
+						.build())
 				.collect(Collectors.toList());
 	}
 
@@ -93,7 +95,7 @@ public final class TestUtils {
 	private static List<Contact> createContactList() {
 		return Stream.of(
 				Contact.builder().id(1l).name("Contact 1").phoneNumber("1666987450").celNumber("16988887745")
-						.ministery("Diácono").relationship("Irmão").address(createAddressList().get(1))
+						.ministery("Diácono").relationship("Irmão").address(createAddressList().get(0))
 						.observation("observation").build(),
 				Contact.builder().id(2l).name("Contact 2").phoneNumber("1666987451").celNumber("16988887746")
 						.ministery("Ancião").relationship("Cunhado").address(createAddressList().get(1))
@@ -114,6 +116,22 @@ public final class TestUtils {
 		return GuestDto.builder().name("Guest 1").type(1l).address(createAddressDto()).dateOfBirth(LocalDate.now())
 				.dateOfBaptism(LocalDate.now()).rg("126547854").cpf("19290228083").phoneNumber("1658741258")
 				.celNumber("18966547890").ministery(true).baptized(true).prayingHouse("Praying House 1")
+				.observation("Observation").build();
+	}
+
+	public static ReservationDto createReservationDto() {
+		return ReservationDto.builder().initialDate(LocalDate.now()).finalDate(LocalDate.now())
+				.checkinDate(LocalDate.now()).checkoutDate(LocalDate.now()).room(createInnerObjectDto(1l))
+				.guests(List.of(createInnerObjectDto(1l), createInnerObjectDto(2l)))
+				.contact(createContactDto())
+				.observation("Observation")
+				.status("CONFIRMED")
+				.build();
+	}
+	
+	public static ContactDto createContactDto() {
+		return ContactDto.builder().name("Contact 1").phoneNumber("1885478965").celNumber("15554785982")
+				.ministery("Ministery").relationship("Relationship").address(createAddressDto())
 				.observation("Observation").build();
 	}
 }

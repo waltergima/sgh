@@ -8,6 +8,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.PostLoad;
@@ -43,7 +44,8 @@ public class Room {
 	private String number;
 	@Column
 	private Integer numberOfBeds;
-	@OneToOne(cascade = { CascadeType.PERSIST, CascadeType.REMOVE })
+	@OneToOne(cascade = { CascadeType.REMOVE })
+	@JoinColumn(name = "support_house_id", referencedColumnName = "id")
 	private SupportHouse supportHouse;
 	@JsonIgnore
 	@LazyCollection(LazyCollectionOption.TRUE)

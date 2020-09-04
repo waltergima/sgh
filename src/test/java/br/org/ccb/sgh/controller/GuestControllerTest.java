@@ -18,10 +18,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.LocalDateTime;
+import java.util.Locale;
 
 import org.hibernate.ObjectNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -29,8 +31,10 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.servlet.i18n.FixedLocaleResolver;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -42,6 +46,7 @@ import br.org.ccb.sgh.http.dto.GuestRequestParamsDto;
 import br.org.ccb.sgh.service.GuestService;
 
 @SpringBootTest
+@ExtendWith(SpringExtension.class)
 class GuestControllerTest {
 
 	private static final String URL = "/guests";
@@ -57,7 +62,7 @@ class GuestControllerTest {
 	@BeforeEach
 	void setUp() {
 		this.mockMvc = MockMvcBuilders.standaloneSetup(guestController)
-				.setControllerAdvice(new ResourceExceptionHandler()).build();
+				.setControllerAdvice(new ResourceExceptionHandler()).setLocaleResolver(new FixedLocaleResolver(new Locale("pt", "BR"))).build();
 		MockitoAnnotations.initMocks(this);
 	}
 
@@ -69,6 +74,39 @@ class GuestControllerTest {
 				.andExpect(jsonPath("timestamp", notNullValue())).andExpect(jsonPath("status", is(400)))
 				.andExpect(jsonPath("message", is("Não é possível remover este registro pois está sendo utilizado")))
 				.andExpect(jsonPath("error", is("Error"))).andExpect(jsonPath("path", is(URL)));
+	}
+	
+	@Test
+	void findAllInvalidIdTest() throws Exception {
+		this.mockMvc.perform(get(URL.concat("?id=a")).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest()).andExpect(jsonPath("timestamp", notNullValue()))
+				.andExpect(jsonPath("status", is(400)))
+				.andExpect(jsonPath("error", is(
+						"Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; nested exception is java.lang.NumberFormatException: For input string: \"a\"")))
+				.andExpect(jsonPath("message", is("Valor incorreto passado para o parâmetro: id")))
+				.andExpect(jsonPath("path", is(URL)));
+	}
+	
+	@Test
+	void findAllInvalidDateOfBirthTest() throws Exception {
+		this.mockMvc.perform(get(URL.concat("?dateOfBirth=a")).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest()).andExpect(jsonPath("timestamp", notNullValue()))
+				.andExpect(jsonPath("status", is(400)))
+				.andExpect(jsonPath("error", is(
+						"Failed to convert value of type 'java.lang.String' to required type 'java.time.LocalDate'; nested exception is org.springframework.core.convert.ConversionFailedException: Failed to convert from type [java.lang.String] to type [@org.springframework.format.annotation.DateTimeFormat @org.springframework.web.bind.annotation.RequestParam java.time.LocalDate] for value 'a'; nested exception is java.lang.IllegalArgumentException: Parse attempt failed for value [a]")))
+				.andExpect(jsonPath("message", is("Valor incorreto passado para o parâmetro: dateOfBirth")))
+				.andExpect(jsonPath("path", is(URL)));
+	}
+	
+	@Test
+	void findAllInvalidDateOfBaptismTest() throws Exception {
+		this.mockMvc.perform(get(URL.concat("?dateOfBaptism=a")).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest()).andExpect(jsonPath("timestamp", notNullValue()))
+				.andExpect(jsonPath("status", is(400)))
+				.andExpect(jsonPath("error", is(
+						"Failed to convert value of type 'java.lang.String' to required type 'java.time.LocalDate'; nested exception is org.springframework.core.convert.ConversionFailedException: Failed to convert from type [java.lang.String] to type [@org.springframework.format.annotation.DateTimeFormat @org.springframework.web.bind.annotation.RequestParam java.time.LocalDate] for value 'a'; nested exception is java.lang.IllegalArgumentException: Parse attempt failed for value [a]")))
+				.andExpect(jsonPath("message", is("Valor incorreto passado para o parâmetro: dateOfBaptism")))
+				.andExpect(jsonPath("path", is(URL)));
 	}
 
 	@Test
