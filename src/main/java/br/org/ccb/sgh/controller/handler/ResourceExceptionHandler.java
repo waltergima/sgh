@@ -21,11 +21,15 @@ import br.org.ccb.sgh.exception.StandardError;
 public class ResourceExceptionHandler {
 	
 	private static final String WITH_ID = "with id";
-
+	
 	@ExceptionHandler({ ObjectNotFoundException.class })
 	public ResponseEntity<StandardError> objectNotFound(ObjectNotFoundException e, HttpServletRequest request) {
+		String message = "Nenhum registro encontrado";
+		if(e.getIdentifier() != null) {
+			message = String.format("Registro com id %s não encontrado", e.getIdentifier());
+		}
 		
-		StandardError err = new StandardError(System.currentTimeMillis(), HttpStatus.NOT_FOUND.value(), "Registro com id " + e.getIdentifier() +  " não encontrado", e.getMessage(), request.getRequestURI());
+		StandardError err = new StandardError(System.currentTimeMillis(), HttpStatus.NOT_FOUND.value(), message, e.getMessage(), request.getRequestURI());
 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(err);
 	}
 	
@@ -35,14 +39,12 @@ public class ResourceExceptionHandler {
 		
 		return this.objectNotFound(new ObjectNotFoundException(split[1].trim(), split[0].substring(14).trim()), request);
 	}
-	
 	@ExceptionHandler({ EmptyResultDataAccessException.class })
 	public ResponseEntity<StandardError> objectNotFound(EmptyResultDataAccessException e, HttpServletRequest request) {
-		String[] split = splitNotFoundMessage(e);
-		
-		return this.objectNotFound(new ObjectNotFoundException(split[1].substring(0, 3).trim(), split[0].substring(8).trim()), request);
+		StandardError err = new StandardError(System.currentTimeMillis(), HttpStatus.NOT_FOUND.value(), "Nenhum registro encontrado", e.getMessage(), request.getRequestURI());
+		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(err);
 	}
-
+	
 	@ExceptionHandler(DataIntegrityViolationException.class)
 	public ResponseEntity<StandardError> dataIntegrity(DataIntegrityViolationException e, HttpServletRequest request) {
 		
