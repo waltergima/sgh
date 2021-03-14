@@ -3,6 +3,7 @@ package br.org.ccb.sgh.controller;
 import java.net.URI;
 import java.time.LocalDate;
 
+import javax.transaction.Transactional;
 import javax.validation.constraints.Size;
 
 import org.hibernate.validator.constraints.br.CPF;
@@ -28,10 +29,14 @@ import br.org.ccb.sgh.entity.Guest;
 import br.org.ccb.sgh.http.dto.GuestDto;
 import br.org.ccb.sgh.http.dto.GuestRequestParamsDto;
 import br.org.ccb.sgh.service.GuestService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("/guests")
 @Validated
+@Transactional
+@Tag(name = "Guest", description = "CRUD for guest")
 public class GuestController {
 
 	@Autowired
@@ -39,6 +44,7 @@ public class GuestController {
 
 	@CrossOrigin(origins = "*", methods = { RequestMethod.GET, RequestMethod.OPTIONS })
 	@GetMapping
+	@Operation
 	public ResponseEntity<Page<Guest>> findAll(@RequestParam(value = "id", required = false) Long id,
 			@RequestParam(value = "name", required = false) String name,
 			@DateTimeFormat(pattern = "dd/MM/yyyy") @RequestParam(value = "dateOfBirth", required = false) LocalDate dateOfBirth,
@@ -72,9 +78,9 @@ public class GuestController {
 	@CrossOrigin(origins = "*", methods = { RequestMethod.POST, RequestMethod.OPTIONS })
 	@PostMapping
 	public ResponseEntity<Void> save(@Validated @RequestBody GuestDto guestDto) {
-		Guest city = this.guestService.save(guestDto);
+		Guest guest = this.guestService.save(guestDto);
 
-		URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(city.getId()).toUri();
+		URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(guest.getId()).toUri();
 		return ResponseEntity.created(uri).build();
 	}
 	

@@ -1,6 +1,7 @@
 package br.org.ccb.sgh.controller;
 
 import java.net.URI;
+import java.time.LocalDate;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -23,9 +24,11 @@ import br.org.ccb.sgh.entity.Room;
 import br.org.ccb.sgh.http.dto.RoomDto;
 import br.org.ccb.sgh.http.dto.RoomRequestParamsDto;
 import br.org.ccb.sgh.service.RoomService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("/rooms")
+@Tag(name = "Room", description = "CRUD for Room")
 public class RoomController {
 
 	@Autowired
@@ -39,16 +42,18 @@ public class RoomController {
 			@RequestParam(value = "number", required = false) String number,
 			@RequestParam(value = "numberOfBeds", required = false) Integer numberOfBeds,
 			@RequestParam(value = "available", required = false) Boolean available,
+			@RequestParam(value = "initialDate", required = false) LocalDate initialDate,
+			@RequestParam(value = "finalDate", required = false) LocalDate finalDate,
 			@RequestParam(value = "offset", defaultValue = "0") Integer offset,
 			@RequestParam(value = "limit", defaultValue = "10") Integer limit,
 			@RequestParam(value = "orderBy", defaultValue = "id") String orderBy,
 			@RequestParam(value = "direction", defaultValue = "ASC") String direction) {
 
 		return ResponseEntity.ok(this.roomService.findAll(RoomRequestParamsDto.builder().id(id).name(name).floor(floor)
-				.number(number).numberOfBeds(numberOfBeds).available(available).offset(offset).limit(limit)
+				.number(number).numberOfBeds(numberOfBeds).available(available).initalDate(initialDate).finalDate(finalDate).offset(offset).limit(limit)
 				.orderBy(orderBy).direction(direction).build()));
 	}
-
+	
 	@CrossOrigin(origins = "*", methods = { RequestMethod.GET, RequestMethod.OPTIONS })
 	@GetMapping(value = "/{id}")
 	public ResponseEntity<Room> byId(@PathVariable Long id) {

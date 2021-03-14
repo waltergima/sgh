@@ -25,9 +25,11 @@ import br.org.ccb.sgh.entity.Reservation;
 import br.org.ccb.sgh.http.dto.ReservationDto;
 import br.org.ccb.sgh.http.dto.ReservationRequestParamsDto;
 import br.org.ccb.sgh.service.ReservationService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("/reservations")
+@Tag(name = "Reservation", description = "CRUD for Reservation")
 public class ReservationController {
 
 	@Autowired

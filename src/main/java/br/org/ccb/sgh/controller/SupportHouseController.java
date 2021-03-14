@@ -25,10 +25,12 @@ import br.org.ccb.sgh.entity.SupportHouse;
 import br.org.ccb.sgh.http.dto.SupportHouseDto;
 import br.org.ccb.sgh.http.dto.SupportHouseRequestParamsDto;
 import br.org.ccb.sgh.service.SupportHouseService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("/supporthouses")
 @Validated
+@Tag(name = "SupportHouse", description = "CRUD for Support Houses")
 public class SupportHouseController {
 
 	@Autowired
