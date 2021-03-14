@@ -7,6 +7,7 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -24,7 +26,6 @@ import org.springframework.data.domain.Pageable;
 import br.org.ccb.sgh.TestUtils;
 import br.org.ccb.sgh.entity.Guest;
 import br.org.ccb.sgh.http.dto.GuestRequestParamsDto;
-import br.org.ccb.sgh.repository.AddressRepository;
 import br.org.ccb.sgh.repository.GuestRepository;
 import br.org.ccb.sgh.repository.specification.GuestSpecification;
 
@@ -38,9 +39,6 @@ class GuestServiceImplTest {
 	@MockBean
 	private GuestRepository guestRepository;
 
-	@MockBean
-	private AddressRepository addressRepository;
-
 	@Test
 	void findAllErrorTest() {
 		when(guestRepository.findAll(any(GuestSpecification.class), any(Pageable.class)))
@@ -51,6 +49,18 @@ class GuestServiceImplTest {
 			this.guestService.findAll(requestParams);
 		});
 		assertEquals("DataIntegrityViolationException", exception.getMessage());
+	}
+	
+	@Test
+	void findAllNotFoundTest() {
+		when(guestRepository.findAll(any(GuestSpecification.class), any(Pageable.class)))
+				.thenReturn(new PageImpl<>(new ArrayList<>()));
+		GuestRequestParamsDto requestParams = GuestRequestParamsDto.builder().offset(0).limit(25)
+				.orderBy("id").direction("ASC").build();
+		EmptyResultDataAccessException exception = assertThrows(EmptyResultDataAccessException.class, () -> {
+			this.guestService.findAll(requestParams);
+		});
+		assertEquals("Incorrect result size: expected 25, actual 0", exception.getMessage());
 	}
 
 	@Test
@@ -103,11 +113,9 @@ class GuestServiceImplTest {
 		mock.getAddress().setId(null);
 		mock.getType().setDescription(null);
 		when(this.guestRepository.save(any(Guest.class))).thenReturn(mock);
-		when(this.addressRepository.save(mock.getAddress())).thenReturn(mock.getAddress());
 		Guest guest = this.guestService.save(TestUtils.createGuestDto());
 		assertEquals(mock, guest);
 		verify(this.guestRepository).save(any(Guest.class));
-		verify(this.addressRepository).save(mock.getAddress());
 	}
 
 	@Test
@@ -117,7 +125,6 @@ class GuestServiceImplTest {
 		mock.getAddress().setId(null);
 		when(this.guestRepository.findById(mock.getId())).thenReturn(Optional.of(mock));
 		when(this.guestRepository.save(any(Guest.class))).thenReturn(mock);
-		when(this.addressRepository.save(mock.getAddress())).thenReturn(mock.getAddress());
 		Guest guest = this.guestService.update(mock.getId(), TestUtils.createGuestDto());
 		assertEquals(mock, guest);
 		verify(this.guestRepository).findById(mock.getId());

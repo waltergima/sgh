@@ -7,6 +7,7 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -24,7 +26,6 @@ import org.springframework.data.domain.Pageable;
 import br.org.ccb.sgh.TestUtils;
 import br.org.ccb.sgh.entity.SupportHouse;
 import br.org.ccb.sgh.http.dto.SupportHouseRequestParamsDto;
-import br.org.ccb.sgh.repository.AddressRepository;
 import br.org.ccb.sgh.repository.SupportHouseRepository;
 import br.org.ccb.sgh.repository.specification.SupportHouseSpecification;
 
@@ -38,9 +39,6 @@ class SupportHouseServiceImplTest {
 	@MockBean
 	private SupportHouseRepository supportHouseRepository;
 
-	@MockBean
-	private AddressRepository addressRepository;
-
 	@Test
 	void findAllErrorTest() {
 		when(supportHouseRepository.findAll(any(SupportHouseSpecification.class), any(Pageable.class)))
@@ -53,6 +51,18 @@ class SupportHouseServiceImplTest {
 		assertEquals("DataIntegrityViolationException", exception.getMessage());
 	}
 
+	@Test
+	void findAllNotFoundTest() {
+		when(supportHouseRepository.findAll(any(SupportHouseSpecification.class), any(Pageable.class)))
+				.thenReturn(new PageImpl<>(new ArrayList<>()));
+		SupportHouseRequestParamsDto requestParams = SupportHouseRequestParamsDto.builder().offset(0).limit(25)
+				.orderBy("id").direction("ASC").build();
+		EmptyResultDataAccessException exception = assertThrows(EmptyResultDataAccessException.class, () -> {
+			this.supportHouseService.findAll(requestParams);
+		});
+		assertEquals("Incorrect result size: expected 25, actual 0", exception.getMessage());
+	}
+	
 	@Test
 	void findAllSuccessTest() {
 		List<SupportHouse> mock = TestUtils.createSupportHouseList();
@@ -102,11 +112,9 @@ class SupportHouseServiceImplTest {
 		mock.setId(null);
 		mock.getAddress().setId(null);
 		when(this.supportHouseRepository.save(mock)).thenReturn(mock);
-		when(this.addressRepository.save(mock.getAddress())).thenReturn(mock.getAddress());
 		SupportHouse supportHouse = this.supportHouseService.save(TestUtils.createSupportHouseDto());
 		assertEquals(mock, supportHouse);
 		verify(this.supportHouseRepository).save(mock);
-		verify(this.addressRepository).save(mock.getAddress());
 	}
 
 	@Test
@@ -115,9 +123,7 @@ class SupportHouseServiceImplTest {
 		mock.setId(null);
 		mock.getAddress().setId(null);
 		when(this.supportHouseRepository.findById(mock.getId())).thenReturn(Optional.of(mock));
-		doNothing().when(this.addressRepository).deleteById(mock.getAddress().getId());
 		when(this.supportHouseRepository.save(mock)).thenReturn(mock);
-		when(this.addressRepository.save(mock.getAddress())).thenReturn(mock.getAddress());
 		SupportHouse supportHouse = this.supportHouseService.update(mock.getId(), TestUtils.createSupportHouseDto());
 		assertEquals(mock, supportHouse);
 		verify(this.supportHouseRepository).findById(mock.getId());

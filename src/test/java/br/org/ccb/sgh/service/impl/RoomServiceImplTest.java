@@ -2,11 +2,13 @@ package br.org.ccb.sgh.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -52,6 +55,18 @@ class RoomServiceImplTest {
 		});
 		assertEquals("DataIntegrityViolationException", exception.getMessage());
 	}
+	
+	@Test
+	void findAllNotFoundTest() {
+		when(roomRepository.findAll(any(RoomSpecification.class), any(Pageable.class)))
+				.thenReturn(new PageImpl<>(new ArrayList<>()));
+		RoomRequestParamsDto requestParams = RoomRequestParamsDto.builder().offset(0).limit(25).orderBy("id")
+				.direction("ASC").build();
+		EmptyResultDataAccessException exception = assertThrows(EmptyResultDataAccessException.class, () -> {
+			this.roomService.findAll(requestParams);
+		});
+		assertEquals("Incorrect result size: expected 25, actual 0", exception.getMessage());
+	}
 
 	@Test
 	void findAllSuccessTest() {
@@ -61,6 +76,55 @@ class RoomServiceImplTest {
 		Page<Room> rooms = this.roomService.findAll(
 				RoomRequestParamsDto.builder().offset(0).limit(25).orderBy("id").direction("ASC").build());
 		assertEquals(rooms.getContent(), mock);
+
+		verify(roomRepository).findAll(any(RoomSpecification.class), any(Pageable.class));
+	}
+	
+	@Test
+	void findAllAvailableTest() {
+		List<Room> mock = TestUtils.createRoomList();
+		when(roomRepository.findAll(any(RoomSpecification.class), any(Pageable.class)))
+				.thenReturn(new PageImpl<Room>(mock));
+		Page<Room> rooms = this.roomService.findAll(
+				RoomRequestParamsDto.builder().available(true).offset(0).limit(25).orderBy("id").direction("ASC").build());
+		assertTrue(rooms.getContent().stream().allMatch(room -> Boolean.TRUE.equals(room.getAvailable())));
+
+		verify(roomRepository).findAll(any(RoomSpecification.class), any(Pageable.class));
+	}
+	
+	@Test
+	void findAllUnAvailableTest() {
+		List<Room> mock = TestUtils.createRoomList();
+		when(roomRepository.findAll(any(RoomSpecification.class), any(Pageable.class)))
+				.thenReturn(new PageImpl<Room>(mock));
+		Page<Room> rooms = this.roomService.findAll(
+				RoomRequestParamsDto.builder().available(false).offset(0).limit(25).orderBy("id").direction("ASC").build());
+		assertTrue(rooms.getContent().stream().allMatch(room -> Boolean.FALSE.equals(room.getAvailable())));
+
+		verify(roomRepository).findAll(any(RoomSpecification.class), any(Pageable.class));
+	}
+	
+	@Test
+	void findAllAvailableWithReservationsTest() {
+		List<Room> mock = TestUtils.createRoomAvailableWithReservationList();
+		
+		when(roomRepository.findAll(any(RoomSpecification.class), any(Pageable.class)))
+				.thenReturn(new PageImpl<Room>(mock));
+		Page<Room> rooms = this.roomService.findAll(
+				RoomRequestParamsDto.builder().offset(0).limit(25).orderBy("id").direction("ASC").build());
+		assertTrue(rooms.getContent().stream().allMatch(room -> Boolean.TRUE.equals(room.getAvailable())));
+
+		verify(roomRepository).findAll(any(RoomSpecification.class), any(Pageable.class));
+	}
+	
+	@Test
+	void findAllUnAvailableWithReservationsTest() {
+		List<Room> mock = TestUtils.createRoomUnavailableWithReservationList();
+		when(roomRepository.findAll(any(RoomSpecification.class), any(Pageable.class)))
+				.thenReturn(new PageImpl<Room>(mock));
+		Page<Room> rooms = this.roomService.findAll(
+				RoomRequestParamsDto.builder().offset(0).limit(25).orderBy("id").direction("ASC").build());
+		assertTrue(rooms.getContent().stream().allMatch(room -> Boolean.FALSE.equals(room.getAvailable())));
 
 		verify(roomRepository).findAll(any(RoomSpecification.class), any(Pageable.class));
 	}

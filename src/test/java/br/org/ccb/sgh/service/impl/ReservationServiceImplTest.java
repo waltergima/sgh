@@ -7,6 +7,7 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -51,6 +53,18 @@ class ReservationServiceImplTest {
 			this.reservationService.findAll(requestParams);
 		});
 		assertEquals("DataIntegrityViolationException", exception.getMessage());
+	}
+	
+	@Test
+	void findAllNotFoundTest() {
+		when(reservationRepository.findAll(any(ReservationSpecification.class), any(Pageable.class)))
+				.thenReturn(new PageImpl<>(new ArrayList<>()));
+		ReservationRequestParamsDto requestParams = ReservationRequestParamsDto.builder().offset(0).limit(25)
+				.orderBy("id").direction("ASC").build();
+		EmptyResultDataAccessException exception = assertThrows(EmptyResultDataAccessException.class, () -> {
+			this.reservationService.findAll(requestParams);
+		});
+		assertEquals("Incorrect result size: expected 25, actual 0", exception.getMessage());
 	}
 
 	@Test
