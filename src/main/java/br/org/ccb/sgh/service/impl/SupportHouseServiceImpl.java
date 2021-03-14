@@ -4,14 +4,13 @@ import javax.transaction.Transactional;
 
 import org.hibernate.ObjectNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
-import br.org.ccb.sgh.entity.Address;
 import br.org.ccb.sgh.entity.SupportHouse;
 import br.org.ccb.sgh.http.dto.SupportHouseDto;
 import br.org.ccb.sgh.http.dto.SupportHouseRequestParamsDto;
-import br.org.ccb.sgh.repository.AddressRepository;
 import br.org.ccb.sgh.repository.SupportHouseRepository;
 import br.org.ccb.sgh.repository.specification.SupportHouseSpecification;
 import br.org.ccb.sgh.service.SupportHouseService;
@@ -22,12 +21,15 @@ public class SupportHouseServiceImpl implements SupportHouseService {
 	@Autowired
 	private SupportHouseRepository supportHouseRepository;
 
-	@Autowired
-	private AddressRepository addressRepository;
-
 	public Page<SupportHouse> findAll(SupportHouseRequestParamsDto requestParams) {
-		return this.supportHouseRepository.findAll(new SupportHouseSpecification(requestParams),
+		Page<SupportHouse> supportHouses = this.supportHouseRepository.findAll(new SupportHouseSpecification(requestParams),
 				requestParams.getPageRequest());
+		
+		if(supportHouses.isEmpty()) {
+			throw new EmptyResultDataAccessException(requestParams.getLimit());
+		}
+		
+		return supportHouses;
 	}
 
 	@Override
@@ -39,7 +41,6 @@ public class SupportHouseServiceImpl implements SupportHouseService {
 	@Override
 	public SupportHouse save(SupportHouseDto supportHouseDto) {
 		SupportHouse supportHouse = SupportHouse.fromDto(null, null, supportHouseDto);
-		supportHouse.setAddress(this.addressRepository.save(Address.fromDto(null, supportHouseDto.getAddress())));
 		return this.supportHouseRepository.save(supportHouse);
 	}
 
@@ -47,9 +48,7 @@ public class SupportHouseServiceImpl implements SupportHouseService {
 	@Transactional
 	public SupportHouse update(Long id, SupportHouseDto supportHouseDto) {
 		SupportHouse supportHouse = this.byId(id);
-		Address address = Address.fromDto(supportHouse.getAddress().getId(), supportHouseDto.getAddress());
-		address.setSupportHouse(supportHouse);
-		supportHouse = SupportHouse.fromDto(supportHouse.getId(), address.getId(), supportHouseDto);
+		supportHouse = SupportHouse.fromDto(supportHouse.getId(), supportHouse.getAddress().getId(), supportHouseDto);
 
 		return this.supportHouseRepository.save(supportHouse);
 	}

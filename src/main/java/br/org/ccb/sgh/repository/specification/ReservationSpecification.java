@@ -40,36 +40,36 @@ public class ReservationSpecification implements Specification<Reservation> {
 			predicates.add(criteriaBuilder.equal(root.get("finalDate"), params.getCheckoutDate()));
 		}
 		if (params.getRoomId() != null) {
-			predicates.add(criteriaBuilder.equal(root.join("room", JoinType.INNER).get("id"), params.getRoomId()));
+			predicates.add(criteriaBuilder.equal(root.get("room").get("id"), params.getRoomId()));
 		}
 		if (params.getRoomName() != null) {
 			predicates.add(criteriaBuilder.like(root.join("room", JoinType.INNER).get("name"),
 					"%" + params.getRoomName() + "%"));
 		}
 		if (params.getGuestId() != null) {
-			predicates.add(criteriaBuilder.equal(root.join("guest", JoinType.INNER).get("id"), params.getGuestId()));
+			predicates.add(criteriaBuilder.equal(root.join("guests", JoinType.INNER).get("id"), params.getGuestId()));
 		}
 		if (params.getGuestName() != null) {
-			predicates.add(criteriaBuilder.like(root.join("guest", JoinType.INNER).get("name"),
+			predicates.add(criteriaBuilder.like(root.join("guests", JoinType.INNER).get("name"),
 					"%" + params.getGuestName() + "%"));
 		}
 		if (params.getContactId() != null) {
 			predicates
-					.add(criteriaBuilder.equal(root.join("contact", JoinType.INNER).get("id"), params.getContactId()));
+					.add(criteriaBuilder.equal(root.get("contact").get("id"), params.getContactId()));
 		}
 		if (params.getContactName() != null) {
 			predicates.add(criteriaBuilder.like(root.join("contact", JoinType.INNER).get("name"),
 					"%" + params.getContactName() + "%"));
 		}
 		if (params.getSupportHouseId() != null) {
-			predicates.add(criteriaBuilder.equal(root.join("supportHouse", JoinType.INNER).get("id"),
+			predicates.add(criteriaBuilder.equal(root.join("room", JoinType.INNER).get("supportHouse").get("id"),
 					params.getSupportHouseId()));
 		}
 		if (params.getStatus() != null) {
 			predicates.add(criteriaBuilder.equal(root.get("status"), params.getStatus()));
 		}
 
-		return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
+		return query.where(criteriaBuilder.and(predicates.toArray(new Predicate[0]))).distinct(true).getRestriction();
 	}
 
 }

@@ -24,6 +24,7 @@ public class SupportHouseSpecification implements Specification<SupportHouse> {
 	@Override
 	public Predicate toPredicate(Root<SupportHouse> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
 		List<Predicate> predicates = new ArrayList<>();
+
 		if (params.getId() != null) {
 			predicates.add(criteriaBuilder.equal(root.get("id"), params.getId()));
 		}
@@ -34,15 +35,15 @@ public class SupportHouseSpecification implements Specification<SupportHouse> {
 			predicates.add(criteriaBuilder.like(root.get("cnpj"), "%" + params.getCnpj() + "%"));
 		}
 		if (params.getCity() != null) {
-			predicates.add(
-					criteriaBuilder.like(root.join("address", JoinType.INNER).get("city"), "%" + params.getCity() + "%"));
+			predicates.add(criteriaBuilder.like(root.join("address", JoinType.INNER).get("city"),
+					"%" + params.getCity() + "%"));
 		}
 		if (params.getState() != null) {
 			predicates.add(criteriaBuilder.like(root.join("address", JoinType.INNER).get("state"),
 					"%" + params.getState() + "%"));
 		}
 
-		return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
+		return query.where(criteriaBuilder.and(predicates.toArray(new Predicate[0]))).distinct(true).getRestriction();
 	}
 
 }

@@ -4,6 +4,7 @@ import javax.transaction.Transactional;
 
 import org.hibernate.ObjectNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
@@ -21,8 +22,13 @@ public class ReservationServiceImpl implements ReservationService {
 	private ReservationRepository reservationRepository;
 
 	public Page<Reservation> findAll(ReservationRequestParamsDto requestParams) {
-		return this.reservationRepository.findAll(new ReservationSpecification(requestParams),
+		Page<Reservation> reservations = this.reservationRepository.findAll(new ReservationSpecification(requestParams),
 				requestParams.getPageRequest());
+		if (reservations.isEmpty()) {
+			throw new EmptyResultDataAccessException(requestParams.getLimit());
+		}
+
+		return reservations;
 	}
 
 	@Override

@@ -4,12 +4,9 @@ import java.io.Serializable;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.OneToOne;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import br.org.ccb.sgh.http.dto.AddressDto;
 import lombok.AllArgsConstructor;
@@ -26,7 +23,7 @@ public class Address implements Serializable {
 	private static final long serialVersionUID = -650219341005024051L;
 
 	@Id
-	@GeneratedValue
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	@Column
 	private String street;
@@ -40,9 +37,6 @@ public class Address implements Serializable {
 	private String number;
 	@Column
 	private String zipCode;
-	@OneToOne(mappedBy = "address", orphanRemoval = true, fetch = FetchType.LAZY)
-	@JsonIgnore
-	private SupportHouse supportHouse;
 
 	public static Address fromDto(Long id, AddressDto addressDto) {
 		return Address.builder().id(id).street(addressDto.getStreet()).district(addressDto.getDistrict())

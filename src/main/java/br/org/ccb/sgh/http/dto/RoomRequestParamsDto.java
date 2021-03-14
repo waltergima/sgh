@@ -1,5 +1,7 @@
 package br.org.ccb.sgh.http.dto;
 
+import java.time.LocalDate;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.SuperBuilder;
@@ -16,4 +18,8 @@ public class RoomRequestParamsDto extends RequestParamsDto {
 	private String number;
 	private Integer numberOfBeds;
 	private Boolean available;
+	private LocalDate initalDate;
+	private LocalDate finalDate;
+	private Long reservationId;
+	private Long supportHouseId;
 }

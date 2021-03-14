@@ -8,6 +8,9 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+
 import br.org.ccb.sgh.http.dto.ContactDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -34,8 +37,9 @@ public class Contact {
 	private String ministery;
 	@Column
 	private String relationship;
-	@OneToOne(cascade = CascadeType.PERSIST, orphanRemoval = true)
+	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, optional = false)
 	@JoinColumn(name = "address_id", referencedColumnName = "id")
+	@Fetch(FetchMode.JOIN)
 	private Address address;
 	@Column
 	private String observation;

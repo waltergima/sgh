@@ -11,10 +11,12 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 
 import org.hibernate.annotations.Fetch;
@@ -37,7 +39,7 @@ import lombok.NoArgsConstructor;
 public class Reservation {
 
 	@Id
-	@GeneratedValue
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	@Column
 	private LocalDate initialDate;
@@ -47,18 +49,20 @@ public class Reservation {
 	private LocalDate checkinDate;
 	@Column
 	private LocalDate checkoutDate;
-	@OneToOne
+	@ManyToOne(fetch = FetchType.EAGER, optional = false)
 	@JoinColumn(name = "room_id", referencedColumnName = "id")
 	@JsonIgnoreProperties(value = "supportHouse")
+	@Fetch(FetchMode.JOIN)
 	private Room room;
 	@JsonManagedReference
-	@ManyToMany(fetch = FetchType.LAZY)
+	@ManyToMany(fetch = FetchType.EAGER)
 	@JoinTable(name = "reservations_guests", joinColumns = @JoinColumn(name = "reservation_id", referencedColumnName = "id"), inverseJoinColumns = @JoinColumn(name = "guest_id", referencedColumnName = "id"))
 	@Fetch(FetchMode.JOIN)
 	@JsonIgnoreProperties(value = "reservations")
 	private List<Guest> guests;
-	@OneToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE }, orphanRemoval = true)
+	@OneToOne(cascade = { CascadeType.ALL }, orphanRemoval = true, optional = false, fetch = FetchType.EAGER)
 	@JoinColumn(name = "contact_id", referencedColumnName = "id")
+	@Fetch(FetchMode.JOIN)
 	private Contact contact;
 	@Column
 	private String observation;

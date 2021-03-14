@@ -58,8 +58,8 @@ public class GuestSpecification implements Specification<Guest> {
 			predicates.add(criteriaBuilder.equal(root.join("reservations", JoinType.INNER).get("id"),
 					params.getReservationId()));
 		}
-
-		return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
+		
+		return query.where(criteriaBuilder.and(predicates.toArray(new Predicate[0]))).distinct(true).getRestriction();
 	}
 
 }

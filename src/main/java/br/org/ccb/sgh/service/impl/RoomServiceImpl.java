@@ -1,11 +1,15 @@
 package br.org.ccb.sgh.service.impl;
 
+import java.time.LocalDate;
+
 import javax.transaction.Transactional;
 
 import org.hibernate.ObjectNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 import br.org.ccb.sgh.entity.Room;
 import br.org.ccb.sgh.http.dto.RoomDto;
@@ -16,19 +20,27 @@ import br.org.ccb.sgh.service.RoomService;
 
 @Service
 public class RoomServiceImpl implements RoomService {
-	
+
 	@Autowired
 	private RoomRepository roomRepository;
 
+	@Override
 	public Page<Room> findAll(RoomRequestParamsDto requestParams) {
-		return this.roomRepository.findAll(new RoomSpecification(requestParams),
+		Page<Room> rooms = this.roomRepository.findAll(new RoomSpecification(requestParams),
 				requestParams.getPageRequest());
+
+		if (rooms.isEmpty()) {
+			throw new EmptyResultDataAccessException(requestParams.getLimit());
+		}
+		
+		setAvailability(requestParams, rooms);
+
+		return rooms;
 	}
 
 	@Override
 	public Room byId(Long id) {
-		return roomRepository.findById(id)
-				.orElseThrow(() -> new ObjectNotFoundException(id, Room.class.getName()));
+		return roomRepository.findById(id).orElseThrow(() -> new ObjectNotFoundException(id, Room.class.getName()));
 	}
 
 	@Override
@@ -48,6 +60,20 @@ public class RoomServiceImpl implements RoomService {
 	@Override
 	public void remove(Long id) {
 		this.roomRepository.deleteById(id);
+	}
+
+	private void setAvailability(RoomRequestParamsDto requestParams, Page<Room> rooms) {
+		rooms.getContent().forEach(room -> {
+			if (requestParams.getAvailable() != null) {
+				room.setAvailable(requestParams.getAvailable());
+			} else {
+				LocalDate date = LocalDate.now();
+				room.setAvailable(ObjectUtils.isEmpty(room.getReservations()) || room.getReservations().stream()
+						.noneMatch(reservation -> !date.isBefore(reservation.getInitialDate())
+								&& (reservation.getCheckoutDate() == null
+										|| date.isBefore(reservation.getCheckoutDate()))));
+			}
+		});
 	}
 
 }

@@ -6,14 +6,17 @@ import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.PostLoad;
 import javax.persistence.Transient;
 
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 import org.springframework.util.ObjectUtils;
@@ -34,7 +37,7 @@ import lombok.NoArgsConstructor;
 public class Room {
 
 	@Id
-	@GeneratedValue
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	@Column
 	private String name;
@@ -44,12 +47,14 @@ public class Room {
 	private String number;
 	@Column
 	private Integer numberOfBeds;
-	@OneToOne(cascade = { CascadeType.REMOVE })
+	@ManyToOne(cascade = { CascadeType.REMOVE }, fetch = FetchType.EAGER, optional = false)
 	@JoinColumn(name = "support_house_id", referencedColumnName = "id")
+	@Fetch(FetchMode.JOIN)
 	private SupportHouse supportHouse;
 	@JsonIgnore
 	@LazyCollection(LazyCollectionOption.TRUE)
-	@OneToMany(cascade = CascadeType.MERGE, mappedBy = "room")
+	@OneToMany(cascade = CascadeType.MERGE, mappedBy = "room", fetch = FetchType.LAZY)
+	@Fetch(FetchMode.JOIN)
 	private List<Reservation> reservations;
 	@Transient
 	private Boolean available;
@@ -60,10 +65,11 @@ public class Room {
 				.build();
 	}
 
-	@PostLoad
+	// @PostLoad
 	private void postLoad() {
 		this.available = ObjectUtils.isEmpty(reservations)
-				|| reservations.stream().noneMatch(reservation -> reservation.getCheckoutDate() == null
-						|| reservation.getCheckoutDate().isAfter(LocalDate.now()));
+				|| reservations.stream().noneMatch(reservation -> (LocalDate.now().isAfter(reservation.getInitialDate()) && LocalDate.now().isBefore(reservation.getFinalDate()))
+						|| (!LocalDate.now().isBefore(reservation.getInitialDate()) && !LocalDate.now().isAfter(reservation.getInitialDate()))
+						);
 	}
 }
