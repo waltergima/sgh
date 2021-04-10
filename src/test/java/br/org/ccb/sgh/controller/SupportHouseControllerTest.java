@@ -20,6 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.Locale;
 
 import org.hibernate.ObjectNotFoundException;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -49,6 +50,7 @@ class SupportHouseControllerTest {
 	private static final String BY_INVALID_ID = URL.concat("/a");
 	private static final String BY_ID = URL.concat("/1");
 	private MockMvc mockMvc;
+	private AutoCloseable closeable;
 
 	@MockBean
 	private SupportHouseService supportHouseService;
@@ -61,7 +63,12 @@ class SupportHouseControllerTest {
 		this.mockMvc = MockMvcBuilders.standaloneSetup(supportHouseController)
 				.setControllerAdvice(new ResourceExceptionHandler())
 				.setLocaleResolver(new FixedLocaleResolver(new Locale("pt", "BR"))).build();
-		MockitoAnnotations.initMocks(this);
+		closeable = MockitoAnnotations.openMocks(this);
+	}
+	
+	@AfterEach
+	void releaseMocks() throws Exception {
+		closeable.close();
 	}
 
 	@Test

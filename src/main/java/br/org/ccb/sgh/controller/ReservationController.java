@@ -56,9 +56,11 @@ public class ReservationController {
 
 		return ResponseEntity.ok(this.reservationService
 				.findAll(ReservationRequestParamsDto.builder()
+						.id(id)
 						.initialDate(initialDate).finalDate(finalDate).checkinDate(checkinDate).checkoutDate(checkoutDate)
 						.roomId(roomId).roomName(roomName).guestId(guestId).guestName(guestName)
 						.contactId(contactId).contactName(contactName).supportHouseId(supportHouseId)
+						.status(status)
 						.offset(offset).limit(limit).orderBy(orderBy).direction(direction).build()));
 	}
 	

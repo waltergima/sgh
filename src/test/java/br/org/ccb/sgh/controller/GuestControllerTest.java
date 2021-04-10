@@ -21,6 +21,7 @@ import java.time.LocalDateTime;
 import java.util.Locale;
 
 import org.hibernate.ObjectNotFoundException;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -52,6 +53,7 @@ class GuestControllerTest {
 	private static final String URL = "/guests";
 	private static final String BY_ID = URL.concat("/1");
 	private MockMvc mockMvc;
+	private AutoCloseable closeable;
 
 	@MockBean
 	private GuestService guestService;
@@ -63,7 +65,12 @@ class GuestControllerTest {
 	void setUp() {
 		this.mockMvc = MockMvcBuilders.standaloneSetup(guestController)
 				.setControllerAdvice(new ResourceExceptionHandler()).setLocaleResolver(new FixedLocaleResolver(new Locale("pt", "BR"))).build();
-		MockitoAnnotations.initMocks(this);
+		closeable = MockitoAnnotations.openMocks(this);
+	}
+	
+	@AfterEach
+	void releaseMocks() throws Exception {
+		closeable.close();
 	}
 
 	@Test

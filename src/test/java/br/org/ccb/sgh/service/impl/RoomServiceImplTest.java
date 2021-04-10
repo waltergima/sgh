@@ -15,6 +15,7 @@ import java.util.Optional;
 import org.hibernate.ObjectNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -173,13 +174,12 @@ class RoomServiceImplTest {
 	@Test
 	void updateSuccessTest() {
 		Room mock = TestUtils.createRoomList().get(0);
-		mock.setId(null);
 		when(this.roomRepository.findById(mock.getId())).thenReturn(Optional.of(mock));
-		when(this.roomRepository.save(mock)).thenReturn(mock);
+		when(this.roomRepository.save(Mockito.any())).thenReturn(mock);
 		Room room = this.roomService.update(mock.getId(), TestUtils.createRoomDto());
 		assertEquals(mock, room);
 		verify(this.roomRepository).findById(mock.getId());
-		verify(this.roomRepository).save(mock);
+		verify(this.roomRepository).save(Mockito.any());
 	}
 
 	@Test

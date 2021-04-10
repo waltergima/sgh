@@ -45,10 +45,6 @@ public class RoomSpecification implements Specification<Room> {
 			predicates.add(criteriaBuilder.equal(root.get("numberOfBeds"), params.getNumberOfBeds()));
 		}
 		
-		if (params.getNumberOfBeds() != null) {
-			predicates.add(criteriaBuilder.equal(root.get("numberOfBeds"), params.getNumberOfBeds()));
-		}
-		
 		if (params.getReservationId() != null || params.getSupportHouseId() != null) {
 			if(params.getReservationId() != null) {				
 				predicates.add(criteriaBuilder.equal(root.join("reservations").get("id"), params.getReservationId()));

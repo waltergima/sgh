@@ -12,6 +12,7 @@ import javax.persistence.criteria.Root;
 import org.springframework.data.jpa.domain.Specification;
 
 import br.org.ccb.sgh.entity.Reservation;
+import br.org.ccb.sgh.entity.Status;
 import br.org.ccb.sgh.http.dto.ReservationRequestParamsDto;
 import lombok.AllArgsConstructor;
 
@@ -34,10 +35,10 @@ public class ReservationSpecification implements Specification<Reservation> {
 			predicates.add(criteriaBuilder.equal(root.get("finalDate"), params.getFinalDate()));
 		}
 		if (params.getCheckinDate() != null) {
-			predicates.add(criteriaBuilder.equal(root.get("initialDate"), params.getCheckinDate()));
+			predicates.add(criteriaBuilder.equal(root.get("checkinDate"), params.getCheckinDate()));
 		}
 		if (params.getCheckoutDate() != null) {
-			predicates.add(criteriaBuilder.equal(root.get("finalDate"), params.getCheckoutDate()));
+			predicates.add(criteriaBuilder.equal(root.get("checkoutDate"), params.getCheckoutDate()));
 		}
 		if (params.getRoomId() != null) {
 			predicates.add(criteriaBuilder.equal(root.get("room").get("id"), params.getRoomId()));
@@ -66,7 +67,7 @@ public class ReservationSpecification implements Specification<Reservation> {
 					params.getSupportHouseId()));
 		}
 		if (params.getStatus() != null) {
-			predicates.add(criteriaBuilder.equal(root.get("status"), params.getStatus()));
+			predicates.add(criteriaBuilder.equal(root.get("status"), Status.valueOf(params.getStatus())));
 		}
 
 		return query.where(criteriaBuilder.and(predicates.toArray(new Predicate[0]))).distinct(true).getRestriction();

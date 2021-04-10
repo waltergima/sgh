@@ -4,14 +4,17 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.Locale;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,6 +34,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import br.org.ccb.sgh.TestUtils;
 import br.org.ccb.sgh.controller.GuestController;
 import br.org.ccb.sgh.controller.handler.ResourceExceptionHandler;
+import br.org.ccb.sgh.http.dto.GuestDto;
 
 @Sql(scripts = {"classpath:sql/drop.sql", "classpath:sql/create.sql", "classpath:sql/populate.sql"})
 @SpringBootTest
@@ -41,6 +45,7 @@ class GuestControllerTest {
 	private static final String URL = "/guests";
 	private static final String BY_ID = URL.concat("/1");
 	private MockMvc mockMvc;
+	private AutoCloseable closeable;
 
 	@Autowired
 	private GuestController guestController;
@@ -49,7 +54,12 @@ class GuestControllerTest {
 	void setUp() {
 		this.mockMvc = MockMvcBuilders.standaloneSetup(guestController)
 				.setControllerAdvice(new ResourceExceptionHandler()).setLocaleResolver(new FixedLocaleResolver(new Locale("pt", "BR"))).build();
-		MockitoAnnotations.initMocks(this);
+		closeable = MockitoAnnotations.openMocks(this);
+	}
+	
+	@AfterEach
+	void releaseMocks() throws Exception {
+		closeable.close();
 	}
 
 	@Test
@@ -58,7 +68,7 @@ class GuestControllerTest {
 				.perform(post(URL).content(new ObjectMapper().writeValueAsString(TestUtils.createGuestDto()))
 						.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isCreated()).andExpect(header().exists("location"))
-				.andExpect(header().string("location", endsWith(URL.concat("/3"))));
+				.andExpect(header().string("location", endsWith(URL.concat("/4"))));
 	}
 	
 	@Test
@@ -446,5 +456,58 @@ class GuestControllerTest {
 				.andExpect(jsonPath("$.content.[0].address.number", is("1F")))
 				.andExpect(jsonPath("$.content.[0].address.state", is("SP")))
 				.andExpect(jsonPath("$.content.[0].address.zipCode", is("11111111")));
+	}
+	
+	@Test
+	void updateSuccessTest() throws Exception {
+		GuestDto guestDto = TestUtils.createUpdateGuestDto();
+		this.mockMvc
+				.perform(put(BY_ID).content(new ObjectMapper().writeValueAsString(guestDto))
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isNoContent());
+		this.mockMvc.perform(get(BY_ID).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+		.andExpect(jsonPath("id", is(1)))
+		.andExpect(jsonPath("name", is(guestDto.getName())))
+		.andExpect(jsonPath("dateOfBirth[0]", is(guestDto.getDateOfBirth().getYear())))
+		.andExpect(jsonPath("dateOfBirth[1]", is(guestDto.getDateOfBirth().getMonthValue())))
+		.andExpect(jsonPath("dateOfBirth[2]", is(guestDto.getDateOfBirth().getDayOfMonth())))
+		.andExpect(jsonPath("phoneNumber", is(guestDto.getPhoneNumber())))
+		.andExpect(jsonPath("celNumber", is(guestDto.getCelNumber())))
+		.andExpect(jsonPath("rg", is(guestDto.getRg())))
+		.andExpect(jsonPath("cpf", is(guestDto.getCpf())))
+		.andExpect(jsonPath("ministery", is(guestDto.getMinistery())))
+		.andExpect(jsonPath("baptized", is(guestDto.getBaptized())))
+		.andExpect(jsonPath("dateOfBaptism[0]", is(guestDto.getDateOfBaptism().getYear())))
+		.andExpect(jsonPath("dateOfBaptism[1]", is(guestDto.getDateOfBaptism().getMonthValue())))
+		.andExpect(jsonPath("dateOfBaptism[2]", is(guestDto.getDateOfBaptism().getDayOfMonth())))
+		.andExpect(jsonPath("prayingHouse", is(guestDto.getPrayingHouse())))
+		.andExpect(jsonPath("observation", is(guestDto.getObservation())))
+		.andExpect(jsonPath("address.id", is(1)))
+		.andExpect(jsonPath("address.street", is(guestDto.getAddress().getStreet())))
+		.andExpect(jsonPath("address.city", is(guestDto.getAddress().getCity())))
+		.andExpect(jsonPath("address.district", is(guestDto.getAddress().getDistrict())))
+		.andExpect(jsonPath("address.number", is(guestDto.getAddress().getNumber())))
+		.andExpect(jsonPath("address.state", is(guestDto.getAddress().getState())))
+		.andExpect(jsonPath("address.zipCode", is(guestDto.getAddress().getZipCode())));
+		
+	}
+	
+	@Test
+	void updateNotFoundTest() throws Exception {
+		GuestDto guestDto = TestUtils.createUpdateGuestDto();
+		this.mockMvc
+				.perform(put(URL.concat("/99999999")).content(new ObjectMapper().writeValueAsString(guestDto))
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isNotFound());
+	}
+	
+	@Test
+	void deleteSuccessTest() throws Exception {
+		String byId = URL.concat("/3");
+		this.mockMvc
+				.perform(delete(byId))
+				.andExpect(status().isNoContent());
+		this.mockMvc.perform(get(byId).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isNotFound());
+		
 	}
 }

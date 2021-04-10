@@ -35,10 +35,19 @@ public final class TestUtils {
 	public static SupportHouseDto createSupportHouseDto() {
 		return SupportHouseDto.builder().name("Test").cnpj("48183050000188").address(createAddressDto()).build();
 	}
+	
+	public static SupportHouseDto createSupportHouseUpdateDto() {
+		return SupportHouseDto.builder().name("Test Update").cnpj("08629758000103").address(createAddressUpdateDto()).build();
+	}
 
 	public static AddressDto createAddressDto() {
 		return AddressDto.builder().street("Street").city("Test").district("District").number("1F").state("SP")
 				.zipCode("11111111").build();
+	}
+	
+	public static AddressDto createAddressUpdateDto() {
+		return AddressDto.builder().street("Street Update").city("Test Update").district("District Update").number("1F Update").state("MG")
+				.zipCode("99999999").build();
 	}
 
 	public static List<Room> createRoomList() {
@@ -133,6 +142,11 @@ public final class TestUtils {
 		return RoomDto.builder().id(1l).name("Room 1").floor("1").number("1A").numberOfBeds(4)
 				.supportHouse(createInnerObjectDto(1l)).build();
 	}
+	
+	public static RoomDto createRoomUpdateDto() {
+		return RoomDto.builder().name("Room Update").floor("2").number("1A Update").numberOfBeds(1)
+				.supportHouse(createInnerObjectDto(1l)).build();
+	}
 
 	public static InnerObjectDto createInnerObjectDto(Long id) {
 		return InnerObjectDto.builder().id(id).build();
@@ -143,6 +157,13 @@ public final class TestUtils {
 				.dateOfBaptism(LocalDate.now()).rg("126547854").cpf("19290228083").phoneNumber("1658741258")
 				.celNumber("18966547890").ministery(true).baptized(true).prayingHouse("Praying House 1")
 				.observation("Observation").build();
+	}
+	
+	public static GuestDto createUpdateGuestDto() {
+		return GuestDto.builder().name("Guest Update").type(2l).address(createAddressUpdateDto()).dateOfBirth(LocalDate.now())
+				.dateOfBaptism(LocalDate.now()).rg("999999999").cpf("87144689053").phoneNumber("9999999999")
+				.celNumber("99999999999").ministery(false).baptized(false).prayingHouse("Praying House Update")
+				.observation("Observation Update").build();
 	}
 
 	public static ReservationDto createReservationDto() {
@@ -155,9 +176,25 @@ public final class TestUtils {
 				.build();
 	}
 	
+	public static ReservationDto createReservationUpdateDto() {
+		return ReservationDto.builder().initialDate(LocalDate.now()).finalDate(LocalDate.now())
+				.checkinDate(LocalDate.now()).checkoutDate(LocalDate.now()).room(createInnerObjectDto(1l))
+				.guests(List.of(createInnerObjectDto(1l), createInnerObjectDto(2l)))
+				.contact(createContactUpdateDto())
+				.observation("Observation Update")
+				.status("CANCELED")
+				.build();
+	}
+	
 	public static ContactDto createContactDto() {
 		return ContactDto.builder().name("Contact 1").phoneNumber("1885478965").celNumber("15554785982")
 				.ministery("Ministery").relationship("Relationship").address(createAddressDto())
 				.observation("Observation").build();
+	}
+	
+	public static ContactDto createContactUpdateDto() {
+		return ContactDto.builder().name("Contact Update").phoneNumber("9999999999").celNumber("99999999999")
+				.ministery("Ministery Update").relationship("Relationship Update").address(createAddressUpdateDto())
+				.observation("Observation Update").build();
 	}
 }

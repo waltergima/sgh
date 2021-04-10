@@ -20,6 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.time.LocalDate;
 
 import org.hibernate.ObjectNotFoundException;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -47,6 +48,7 @@ class ReservationControllerTest {
 	private static final String URL = "/reservations";
 	private static final String BY_ID = URL.concat("/1");
 	private MockMvc mockMvc;
+	private AutoCloseable closeable;
 
 	@MockBean
 	private ReservationService supportHouseService;
@@ -58,7 +60,12 @@ class ReservationControllerTest {
 	void setUp() {
 		this.mockMvc = MockMvcBuilders.standaloneSetup(supportHouseController)
 				.setControllerAdvice(new ResourceExceptionHandler()).build();
-		MockitoAnnotations.initMocks(this);
+		closeable = MockitoAnnotations.openMocks(this);
+	}
+	
+	@AfterEach
+	void releaseMocks() throws Exception {
+		closeable.close();
 	}
 
 	@Test

@@ -40,7 +40,10 @@ public class RoomServiceImpl implements RoomService {
 
 	@Override
 	public Room byId(Long id) {
-		return roomRepository.findById(id).orElseThrow(() -> new ObjectNotFoundException(id, Room.class.getName()));
+		return roomRepository.findById(id).map(room -> {
+			room.setAvailable(roomIsAvailable(room));
+			return room;
+		}).orElseThrow(() -> new ObjectNotFoundException(id, Room.class.getName()));
 	}
 
 	@Override
@@ -67,13 +70,17 @@ public class RoomServiceImpl implements RoomService {
 			if (requestParams.getAvailable() != null) {
 				room.setAvailable(requestParams.getAvailable());
 			} else {
-				LocalDate date = LocalDate.now();
-				room.setAvailable(ObjectUtils.isEmpty(room.getReservations()) || room.getReservations().stream()
-						.noneMatch(reservation -> !date.isBefore(reservation.getInitialDate())
-								&& (reservation.getCheckoutDate() == null
-										|| date.isBefore(reservation.getCheckoutDate()))));
+				room.setAvailable(roomIsAvailable(room));
 			}
 		});
+	}
+
+	public Boolean roomIsAvailable(Room room) {
+		LocalDate date = LocalDate.now();
+		return (ObjectUtils.isEmpty(room.getReservations()) || room.getReservations().stream()
+				.noneMatch(reservation -> !date.isBefore(reservation.getInitialDate())
+						&& (reservation.getCheckoutDate() == null
+								|| date.isBefore(reservation.getCheckoutDate()))));
 	}
 
 }
