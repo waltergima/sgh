@@ -1,10 +1,12 @@
 package br.org.ccb.sgh.integrated.controller;
 
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -34,6 +36,7 @@ import br.org.ccb.sgh.TestUtils;
 import br.org.ccb.sgh.controller.ReservationController;
 import br.org.ccb.sgh.controller.handler.ResourceExceptionHandler;
 import br.org.ccb.sgh.http.dto.ReservationDto;
+import br.org.ccb.sgh.http.dto.ReservationStatusDto;
 
 @Sql(scripts = {"classpath:sql/drop.sql", "classpath:sql/create.sql", "classpath:sql/populate.sql"})
 @SpringBootTest
@@ -1329,6 +1332,37 @@ public class ReservationControllerTest {
 		.andExpect(jsonPath("contact.address.state", is(reservationDto.getContact().getAddress().getState())))
 		.andExpect(jsonPath("contact.address.zipCode", is(reservationDto.getContact().getAddress().getZipCode())));
 		
+	}
+	
+	@Test
+	void updateStatusSuccessTest() throws Exception {
+		ReservationStatusDto reservationStatusDto = TestUtils.createReservationStatusDto();
+		this.mockMvc
+				.perform(patch(BY_ID.concat("/status")).content(new ObjectMapper().writeValueAsString(reservationStatusDto))
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isNoContent());
+		
+		this.mockMvc.perform(get(BY_ID).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+		.andExpect(jsonPath("status", is(reservationStatusDto.getStatus())));
+	}
+	
+	@Test
+	void updateStatusErrorTest() throws Exception {
+		ReservationStatusDto reservationStatusDto = TestUtils.createReservationStatusDto();
+		reservationStatusDto.setStatus("INEXISTING_STATUS");
+		String url = BY_ID.concat("/status");
+		this.mockMvc
+				.perform(patch(url).content(new ObjectMapper().writeValueAsString(reservationStatusDto))
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("timestamp", notNullValue()))
+				.andExpect(jsonPath("status", is(400)))
+				.andExpect(jsonPath("message", is("Valor incorreto passado. Verifique os dados e tente novamente")))
+				.andExpect(jsonPath("error", is("No enum constant br.org.ccb.sgh.entity.Status.INEXISTING_STATUS")))
+				.andExpect(jsonPath("path", is(url)));
+		
+		this.mockMvc.perform(get(BY_ID).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+		.andExpect(jsonPath("status", is("CONFIRMED")));
 	}
 	
 	@Test

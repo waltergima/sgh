@@ -18,6 +18,7 @@ import br.org.ccb.sgh.http.dto.ContactDto;
 import br.org.ccb.sgh.http.dto.GuestDto;
 import br.org.ccb.sgh.http.dto.InnerObjectDto;
 import br.org.ccb.sgh.http.dto.ReservationDto;
+import br.org.ccb.sgh.http.dto.ReservationStatusDto;
 import br.org.ccb.sgh.http.dto.RoomDto;
 import br.org.ccb.sgh.http.dto.SupportHouseDto;
 
@@ -174,6 +175,10 @@ public final class TestUtils {
 				.observation("Observation")
 				.status("CONFIRMED")
 				.build();
+	}
+	
+	public static ReservationStatusDto createReservationStatusDto() {
+		return ReservationStatusDto.builder().status("CANCELED").build();
 	}
 	
 	public static ReservationDto createReservationUpdateDto() {

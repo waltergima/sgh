@@ -44,13 +44,16 @@ public class RoomController {
 			@RequestParam(value = "available", required = false) Boolean available,
 			@RequestParam(value = "initialDate", required = false) LocalDate initialDate,
 			@RequestParam(value = "finalDate", required = false) LocalDate finalDate,
+			@RequestParam(value = "reservationId", required = false) Long reservationId,
+			@RequestParam(value = "supportHouseId", required = false) Long supportHouseId,
 			@RequestParam(value = "offset", defaultValue = "0") Integer offset,
 			@RequestParam(value = "limit", defaultValue = "10") Integer limit,
 			@RequestParam(value = "orderBy", defaultValue = "id") String orderBy,
 			@RequestParam(value = "direction", defaultValue = "ASC") String direction) {
 
 		return ResponseEntity.ok(this.roomService.findAll(RoomRequestParamsDto.builder().id(id).name(name).floor(floor)
-				.number(number).numberOfBeds(numberOfBeds).available(available).initalDate(initialDate).finalDate(finalDate).offset(offset).limit(limit)
+				.number(number).numberOfBeds(numberOfBeds).available(available).initalDate(initialDate).finalDate(finalDate)
+				.reservationId(reservationId).supportHouseId(supportHouseId).offset(offset).limit(limit)
 				.orderBy(orderBy).direction(direction).build()));
 	}
 	

@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import br.org.ccb.sgh.entity.Reservation;
 import br.org.ccb.sgh.http.dto.ReservationDto;
 import br.org.ccb.sgh.http.dto.ReservationRequestParamsDto;
+import br.org.ccb.sgh.http.dto.ReservationStatusDto;
 
 public interface ReservationService {
 	
@@ -17,5 +18,7 @@ public interface ReservationService {
 	public Reservation update(Long id, ReservationDto reservationDto);
 
 	public void remove(Long id);
+
+	public Reservation updateStatus(Long id, ReservationStatusDto reservationStatusDto);
 
 }

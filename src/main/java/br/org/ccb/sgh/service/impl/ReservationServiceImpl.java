@@ -9,8 +9,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import br.org.ccb.sgh.entity.Reservation;
+import br.org.ccb.sgh.entity.Status;
 import br.org.ccb.sgh.http.dto.ReservationDto;
 import br.org.ccb.sgh.http.dto.ReservationRequestParamsDto;
+import br.org.ccb.sgh.http.dto.ReservationStatusDto;
 import br.org.ccb.sgh.repository.ReservationRepository;
 import br.org.ccb.sgh.repository.specification.ReservationSpecification;
 import br.org.ccb.sgh.service.ReservationService;
@@ -47,6 +49,15 @@ public class ReservationServiceImpl implements ReservationService {
 	public Reservation update(Long id, ReservationDto reservationDto) {
 		Reservation reservation = this.byId(id);
 		reservation = Reservation.fromDto(reservation.getId(), reservationDto);
+
+		return this.reservationRepository.save(reservation);
+	}
+	
+	@Override
+	@Transactional
+	public Reservation updateStatus(Long id, ReservationStatusDto reservationStatusDto) {
+		Reservation reservation = this.byId(id);
+		reservation.setStatus(Status.valueOf(reservationStatusDto.getStatus()));
 
 		return this.reservationRepository.save(reservation);
 	}

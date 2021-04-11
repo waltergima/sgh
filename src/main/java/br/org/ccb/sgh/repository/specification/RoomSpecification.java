@@ -45,13 +45,12 @@ public class RoomSpecification implements Specification<Room> {
 			predicates.add(criteriaBuilder.equal(root.get("numberOfBeds"), params.getNumberOfBeds()));
 		}
 		
-		if (params.getReservationId() != null || params.getSupportHouseId() != null) {
-			if(params.getReservationId() != null) {				
-				predicates.add(criteriaBuilder.equal(root.join("reservations").get("id"), params.getReservationId()));
-			}
-			if(params.getSupportHouseId() != null) {
-				predicates.add(criteriaBuilder.equal(root.join("reservations").get("supportHouse").get("id"), params.getSupportHouseId()));
-			}
+		if (params.getReservationId() != null) {
+			predicates.add(criteriaBuilder.equal(root.join("reservations").get("id"), params.getReservationId()));
+		}
+		
+		if (params.getSupportHouseId() != null) {
+			predicates.add(criteriaBuilder.equal(root.join("supportHouse").get("id"), params.getSupportHouseId()));
 		}
 		
 		Subquery<Reservation> subquery = query.subquery(Reservation.class);

@@ -11,6 +11,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -24,6 +25,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import br.org.ccb.sgh.entity.Reservation;
 import br.org.ccb.sgh.http.dto.ReservationDto;
 import br.org.ccb.sgh.http.dto.ReservationRequestParamsDto;
+import br.org.ccb.sgh.http.dto.ReservationStatusDto;
 import br.org.ccb.sgh.service.ReservationService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
@@ -83,6 +85,14 @@ public class ReservationController {
 	@PutMapping(value="/{id}")
 	public ResponseEntity<Void> update(@PathVariable Long id, @Validated @RequestBody ReservationDto reservationDto) {
 		this.reservationService.update(id, reservationDto);
+
+		return ResponseEntity.noContent().build();
+	}
+	
+	@CrossOrigin(origins = "*", methods = { RequestMethod.PATCH, RequestMethod.OPTIONS })
+	@PatchMapping(value="/{id}/status")
+	public ResponseEntity<Void> updateStatus(@PathVariable Long id, @Validated @RequestBody ReservationStatusDto reservationsStatusDto) {
+		this.reservationService.updateStatus(id, reservationsStatusDto);
 
 		return ResponseEntity.noContent().build();
 	}

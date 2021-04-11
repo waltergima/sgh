@@ -147,13 +147,19 @@ public class RoomControllerTest {
 	
 	@Test
 	void findAllFilteringByAvailableSuccessTest() throws Exception {
-		this.mockMvc.perform(get(URL.concat("?availabe=false")).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+		this.mockMvc.perform(get(URL.concat("?available=false")).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 		.andExpect(jsonPath("$.content", hasSize(2))).andExpect(jsonPath("$.content.[0].id", is(1)))
 		.andExpect(jsonPath("$.content.[0].name", is("Room 1")))
 		.andExpect(jsonPath("$.content.[0].floor", is("1")))
 		.andExpect(jsonPath("$.content.[0].number", is("1A")))
 		.andExpect(jsonPath("$.content.[0].numberOfBeds", is(4)))
-		.andExpect(jsonPath("$.content.[0].available", is(true)));
+		.andExpect(jsonPath("$.content.[0].available", is(false)))
+		.andExpect(jsonPath("$.content.[1].id", is(2)))
+		.andExpect(jsonPath("$.content.[1].name", is("Room 2")))
+		.andExpect(jsonPath("$.content.[1].floor", is("2")))
+		.andExpect(jsonPath("$.content.[1].number", is("2A")))
+		.andExpect(jsonPath("$.content.[1].numberOfBeds", is(1)))
+		.andExpect(jsonPath("$.content.[1].available", is(false)));
 	}
 	
 	@Test
@@ -164,7 +170,13 @@ public class RoomControllerTest {
 		.andExpect(jsonPath("$.content.[0].floor", is("1")))
 		.andExpect(jsonPath("$.content.[0].number", is("1A")))
 		.andExpect(jsonPath("$.content.[0].numberOfBeds", is(4)))
-		.andExpect(jsonPath("$.content.[0].available", is(true)));
+		.andExpect(jsonPath("$.content.[0].available", is(true)))
+		.andExpect(jsonPath("$.content.[1].id", is(2)))
+		.andExpect(jsonPath("$.content.[1].name", is("Room 2")))
+		.andExpect(jsonPath("$.content.[1].floor", is("2")))
+		.andExpect(jsonPath("$.content.[1].number", is("2A")))
+		.andExpect(jsonPath("$.content.[1].numberOfBeds", is(1)))
+		.andExpect(jsonPath("$.content.[1].available", is(true)));
 	}
 	
 	@Test
@@ -176,6 +188,33 @@ public class RoomControllerTest {
 		.andExpect(jsonPath("$.content.[0].number", is("1A")))
 		.andExpect(jsonPath("$.content.[0].numberOfBeds", is(4)))
 		.andExpect(jsonPath("$.content.[0].available", is(true)));
+	}
+	
+	@Test
+	void findAllFilteringByReservationIdSuccessTest() throws Exception {
+		this.mockMvc.perform(get(URL.concat("?reservationId=1")).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+		.andExpect(jsonPath("$.content", hasSize(1))).andExpect(jsonPath("$.content.[0].id", is(1)))
+		.andExpect(jsonPath("$.content.[0].name", is("Room 1")))
+		.andExpect(jsonPath("$.content.[0].floor", is("1")))
+		.andExpect(jsonPath("$.content.[0].number", is("1A")))
+		.andExpect(jsonPath("$.content.[0].numberOfBeds", is(4)))
+		.andExpect(jsonPath("$.content.[0].available", is(true)));
+	}
+	
+	@Test
+	void findAllFilteringBySupportHouseIdSuccessTest() throws Exception {
+		this.mockMvc.perform(get(URL.concat("?supportHouseId=1")).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk()).andExpect(jsonPath("$.content", hasSize(2)))
+				.andExpect(jsonPath("$.content.[0].id", is(1))).andExpect(jsonPath("$.content.[0].name", is("Room 1")))
+				.andExpect(jsonPath("$.content.[0].floor", is("1")))
+				.andExpect(jsonPath("$.content.[0].number", is("1A")))
+				.andExpect(jsonPath("$.content.[0].numberOfBeds", is(4)))
+				.andExpect(jsonPath("$.content.[0].available", is(true))).andExpect(jsonPath("$.content.[1].id", is(2)))
+				.andExpect(jsonPath("$.content.[1].name", is("Room 2")))
+				.andExpect(jsonPath("$.content.[1].floor", is("2")))
+				.andExpect(jsonPath("$.content.[1].number", is("2A")))
+				.andExpect(jsonPath("$.content.[1].numberOfBeds", is(1)))
+				.andExpect(jsonPath("$.content.[1].available", is(true)));
 	}
 	
 	@Test
