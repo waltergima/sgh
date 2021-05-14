@@ -17,8 +17,8 @@ public class RoomRequestParamsDto extends RequestParamsDto {
 	private String floor;
 	private String number;
 	private Integer numberOfBeds;
-	private Boolean available;
-	private LocalDate initalDate;
+	private String status;
+	private LocalDate initialDate;
 	private LocalDate finalDate;
 	private Long reservationId;
 	private Long supportHouseId;

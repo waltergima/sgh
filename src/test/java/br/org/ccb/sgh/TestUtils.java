@@ -1,6 +1,7 @@
 package br.org.ccb.sgh;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -11,7 +12,6 @@ import br.org.ccb.sgh.entity.Guest;
 import br.org.ccb.sgh.entity.GuestType;
 import br.org.ccb.sgh.entity.Reservation;
 import br.org.ccb.sgh.entity.Room;
-import br.org.ccb.sgh.entity.Status;
 import br.org.ccb.sgh.entity.SupportHouse;
 import br.org.ccb.sgh.http.dto.AddressDto;
 import br.org.ccb.sgh.http.dto.ContactDto;
@@ -21,6 +21,7 @@ import br.org.ccb.sgh.http.dto.ReservationDto;
 import br.org.ccb.sgh.http.dto.ReservationStatusDto;
 import br.org.ccb.sgh.http.dto.RoomDto;
 import br.org.ccb.sgh.http.dto.SupportHouseDto;
+import br.org.ccb.sgh.util.ReservationStatus;
 
 public final class TestUtils {
 
@@ -60,25 +61,59 @@ public final class TestUtils {
 				.collect(Collectors.toList());
 	}
 	
-	public static List<Room> createRoomUnavailableWithReservationList() {
-		return Stream.of(Room.builder().id(1l).name("Room 1").floor("1").number("1A").numberOfBeds(4)
-				.supportHouse(SupportHouse.builder().id(createSupportHouseList().get(0).getId()).build())
-				.reservations(createReservationList(LocalDate.now().minusDays(1), LocalDate.now().plusDays(10), LocalDate.now().minusDays(1), LocalDate.now().plusDays(10))).build(),
-				Room.builder().id(2l).name("Room 2").floor("1").number("1B").numberOfBeds(2)
-						.supportHouse(SupportHouse.builder().id(createSupportHouseList().get(1).getId()).build())
-						.reservations(createReservationList(LocalDate.now().minusDays(1), LocalDate.now().plusDays(10), LocalDate.now().minusDays(1), null))
-						.build())
-				.collect(Collectors.toList());
-	}
-	
-	public static List<Room> createRoomAvailableWithReservationList() {
-		return Stream.of(Room.builder().id(1l).name("Room 1").floor("1").number("1A").numberOfBeds(4)
-				.supportHouse(SupportHouse.builder().id(createSupportHouseList().get(0).getId()).build())
-				.reservations(createReservationList(LocalDate.now().plusDays(1), LocalDate.now().plusDays(10), LocalDate.now().plusDays(1), LocalDate.now().plusDays(10))).build(),
-				Room.builder().id(2l).name("Room 2").floor("1").number("1B").numberOfBeds(2)
-						.supportHouse(SupportHouse.builder().id(createSupportHouseList().get(1).getId()).build())
-						.reservations(createReservationList(LocalDate.now().minusDays(10), LocalDate.now().minusDays(1), LocalDate.now().minusDays(10), LocalDate.now().minusDays(1)))
-						.build())
+	public static List<Room> createRoomWithAllStatus() {
+		return Stream
+				.of(Room.builder().id(1l).name("Room 1").floor("1").number("1A").numberOfBeds(4)
+						.supportHouse(SupportHouse.builder().id(createSupportHouseList().get(0).getId()).build())
+						.reservations(createReservationList(
+								LocalDate.now().minusDays(1), LocalDate.now().plusDays(10),
+								LocalDate.now().plusDays(1), LocalDate.now().plusDays(10)))
+						.build(),
+						Room.builder().id(2l).name("Room 2").floor("1").number("1B").numberOfBeds(2)
+								.supportHouse(
+										SupportHouse.builder().id(createSupportHouseList().get(1).getId()).build())
+								.reservations(
+										createReservationList(
+												LocalDate.now().plusDays(1), LocalDate.now().plusDays(10),
+												LocalDate.now().minusDays(1), null))
+								.build(),
+						Room.builder().id(3l).name("Room 3").floor("1").number("1A").numberOfBeds(4)
+								.supportHouse(
+										SupportHouse.builder().id(createSupportHouseList().get(0).getId()).build())
+								.reservations(createReservationList(LocalDate.now().minusDays(10),
+										LocalDate.now().minusDays(5), LocalDate.now().minusDays(1),
+										LocalDate.now().plusDays(10)))
+								.build(),
+						Room.builder().id(4l).name("Room 4").floor("1").number("1A").numberOfBeds(4)
+								.supportHouse(
+										SupportHouse.builder().id(createSupportHouseList().get(0).getId()).build())
+								.reservations(createReservationList(LocalDate.now().plusDays(1),
+										LocalDate.now().plusDays(10), LocalDate.now().plusDays(1),
+										LocalDate.now().plusDays(10)))
+								.build(),
+						Room.builder().id(5l).name("Room 5").floor("1").number("1B").numberOfBeds(2)
+								.supportHouse(
+										SupportHouse.builder().id(createSupportHouseList().get(1).getId()).build())
+								.reservations(createReservationList(LocalDate.now().minusDays(10),
+										LocalDate.now().minusDays(1), LocalDate.now().minusDays(10),
+										LocalDate.now().minusDays(1)))
+								.build(),
+						Room.builder().id(6l).name("Room 6").floor("1").number("1B").numberOfBeds(2)
+								.supportHouse(
+										SupportHouse.builder().id(createSupportHouseList().get(1).getId()).build())
+								.build(),
+						Room.builder().id(1l).name("Room 7").floor("7").number("1A").numberOfBeds(4)
+								.supportHouse(SupportHouse.builder().id(createSupportHouseList().get(0).getId()).build())
+								.reservations(createReservationList(
+										LocalDate.now().minusDays(1), LocalDate.now().plusDays(10),
+										null, null))
+								.build(),
+						Room.builder().id(1l).name("Room 8").floor("8").number("1A").numberOfBeds(4)
+								.supportHouse(SupportHouse.builder().id(createSupportHouseList().get(0).getId()).build())
+								.reservations(createReservationList(
+										LocalDate.now().minusDays(1), LocalDate.now().minusDays(1),
+										null, null))
+								.build())
 				.collect(Collectors.toList());
 	}
 	
@@ -90,11 +125,11 @@ public final class TestUtils {
 		return Stream.of(
 				Reservation.builder().id(1l).initialDate(initialDate).finalDate(finalDate)
 						.checkinDate(checkinDate).checkoutDate(checkoutDate).observation("Observation")
-						.status(Status.CONFIRMED).guests(createGuestList()).contact(createContactList().get(0))
+						.status(ReservationStatus.CONFIRMED).guests(createGuestList()).contact(createContactList().get(0))
 						.build(),
 				Reservation.builder().id(2l).initialDate(initialDate).finalDate(finalDate)
 						.checkinDate(checkinDate).checkoutDate(checkoutDate).observation("Observation 2")
-						.status(Status.PAUSED).guests(createGuestList()).contact(createContactList().get(1))
+						.status(ReservationStatus.PAUSED).guests(createGuestList()).contact(createContactList().get(1))
 						.build())
 				.collect(Collectors.toList());
 	}
@@ -201,5 +236,9 @@ public final class TestUtils {
 		return ContactDto.builder().name("Contact Update").phoneNumber("9999999999").celNumber("99999999999")
 				.ministery("Ministery Update").relationship("Relationship Update").address(createAddressUpdateDto())
 				.observation("Observation Update").build();
+	}
+	
+	public static String getFormattedDate(LocalDate date) {
+		return date.format(DateTimeFormatter.ofPattern("YYYY-MM-dd"));
 	}
 }

@@ -35,7 +35,7 @@ import br.org.ccb.sgh.controller.SupportHouseController;
 import br.org.ccb.sgh.controller.handler.ResourceExceptionHandler;
 import br.org.ccb.sgh.http.dto.SupportHouseDto;
 
-@Sql(scripts = {"classpath:sql/drop.sql", "classpath:sql/create.sql", "classpath:sql/populate.sql"})
+@Sql(scripts = { "classpath:sql/drop.sql", "classpath:sql/create.sql", "classpath:sql/populate.sql" })
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 @SpringJUnitWebConfig
@@ -196,7 +196,12 @@ public class SupportHouseControllerTest {
 	
 	@Test
 	void deleteSuccessTest() throws Exception {
-		String byId = URL.concat("/2");
+		this.mockMvc
+		.perform(post(URL).content(new ObjectMapper().writeValueAsString(TestUtils.createSupportHouseDto()))
+				.contentType(MediaType.APPLICATION_JSON))
+		.andExpect(status().isCreated()).andExpect(header().exists("location"))
+		.andExpect(header().string("location", endsWith(URL.concat("/3"))));
+		String byId = URL.concat("/3");
 		this.mockMvc
 				.perform(delete(byId))
 				.andExpect(status().isNoContent());

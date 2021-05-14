@@ -26,6 +26,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import br.org.ccb.sgh.http.dto.ReservationDto;
+import br.org.ccb.sgh.util.ReservationStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -67,7 +68,7 @@ public class Reservation {
 	@Column
 	private String observation;
 	@Enumerated(EnumType.STRING)
-	private Status status;
+	private ReservationStatus status;
 
 	public static Reservation fromDto(Long id, ReservationDto reservationDto) {
 		return Reservation.builder().id(id).initialDate(reservationDto.getInitialDate())
@@ -77,7 +78,7 @@ public class Reservation {
 				.guests(reservationDto.getGuests().stream().map(guest -> Guest.builder().id(guest.getId()).build())
 						.collect(Collectors.toList()))
 				.contact(Contact.fromDto(null, reservationDto.getContact()))
-				.observation(reservationDto.getObservation()).status(Status.valueOf(reservationDto.getStatus()))
+				.observation(reservationDto.getObservation()).status(ReservationStatus.valueOf(reservationDto.getStatus()))
 				.build();
 	}
 }

@@ -14,6 +14,8 @@ import org.springframework.data.jpa.domain.Specification;
 import br.org.ccb.sgh.entity.Reservation;
 import br.org.ccb.sgh.entity.Room;
 import br.org.ccb.sgh.http.dto.RoomRequestParamsDto;
+import br.org.ccb.sgh.util.ReservationStatus;
+import br.org.ccb.sgh.util.RoomStatus;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
@@ -23,6 +25,8 @@ public class RoomSpecification implements Specification<Room> {
 
 	private static final String CHECKIN_DATE = "checkinDate";
 	private static final String CHECKOUT_DATE = "checkoutDate";
+	private static final String INITIAL_DATE = "initialDate";
+	private static final String FINAL_DATE = "finalDate";
 
 	private RoomRequestParamsDto params;
 
@@ -63,23 +67,52 @@ public class RoomSpecification implements Specification<Room> {
 
 	private void getAvailability(Root<Room> root, CriteriaBuilder criteriaBuilder, List<Predicate> predicates,
 			Subquery<Reservation> subquery, Root<Reservation> reservation) {
-		if (params.getInitalDate() != null && params.getFinalDate() != null) {
+		if (params.getStatus() != null) {
+			
+			Predicate where = criteriaBuilder.and(
+					criteriaBuilder.equal(root.get("id"), reservation.get("room").get("id")),
+					criteriaBuilder.equal(criteriaBuilder.literal(ReservationStatus.CONFIRMED),
+							reservation.get("status")),
+					getStatusPredicate(root, criteriaBuilder, reservation));
+
 			Subquery<Reservation> subquery2 = subquery.select(reservation.get("room").get("id")).distinct(true)
 						.where(
-								criteriaBuilder.and(
-										criteriaBuilder.equal(root.get("id"), reservation.get("room").get("id")),
-								criteriaBuilder.or(
-								criteriaBuilder.between(criteriaBuilder.literal(params.getInitalDate()), reservation.get(CHECKIN_DATE), reservation.get(CHECKOUT_DATE)),
-								criteriaBuilder.between(criteriaBuilder.literal(params.getFinalDate()), reservation.get(CHECKIN_DATE), reservation.get(CHECKOUT_DATE)),
-								criteriaBuilder.between(reservation.get(CHECKIN_DATE), criteriaBuilder.literal(params.getInitalDate()), criteriaBuilder.literal(params.getFinalDate()))
-									)));
+								where);
 			
-			if (Boolean.TRUE.equals(params.getAvailable())) {
-				predicates.add(criteriaBuilder.exists(subquery2).not());
-			} else {
-				predicates.add(criteriaBuilder.exists(subquery2));
-			}
+			predicates.add(criteriaBuilder.exists(subquery2));
 		}
+	}
+	
+	private Predicate getStatusPredicate(Root<Room> root, CriteriaBuilder criteriaBuilder, Root<Reservation> reservation) {
+		if(params.getStatus().equals(RoomStatus.AVAILABLE.toString())) {
+			return criteriaBuilder.or(criteriaBuilder.isEmpty(root.get("reservations")),
+					criteriaBuilder.and(getReservedPredicate(criteriaBuilder, reservation).not(), getOccupiedPredicate(criteriaBuilder, reservation).not()));
+		}
+		if(params.getStatus().equals(RoomStatus.RESERVED.toString())) {
+			return getReservedPredicate(criteriaBuilder, reservation);
+		}
+		return getOccupiedPredicate(criteriaBuilder, reservation);
+	}
+
+	private Predicate getReservedPredicate(CriteriaBuilder criteriaBuilder, Root<Reservation> reservation) {
+		return criteriaBuilder.or(
+				criteriaBuilder.between(criteriaBuilder.literal(params.getInitialDate()), reservation.get(INITIAL_DATE),
+						reservation.get(FINAL_DATE)),
+				criteriaBuilder.between(criteriaBuilder.literal(params.getFinalDate()), reservation.get(INITIAL_DATE),
+						reservation.get(FINAL_DATE)),
+				criteriaBuilder.between(reservation.get(INITIAL_DATE), criteriaBuilder.literal(params.getInitialDate()),
+						criteriaBuilder.literal(params.getFinalDate())));
+	}
+	
+	private Predicate getOccupiedPredicate(CriteriaBuilder criteriaBuilder, Root<Reservation> reservation) {
+		return criteriaBuilder.or(
+				criteriaBuilder.between(criteriaBuilder.literal(params.getInitialDate()), reservation.get(CHECKIN_DATE),
+						reservation.get(CHECKOUT_DATE)),
+				criteriaBuilder.or(criteriaBuilder.isNull(reservation.get(CHECKOUT_DATE)),
+						criteriaBuilder.between(criteriaBuilder.literal(params.getFinalDate()),
+								reservation.get(CHECKIN_DATE), reservation.get(CHECKOUT_DATE))),
+				criteriaBuilder.between(reservation.get(CHECKIN_DATE), criteriaBuilder.literal(params.getInitialDate()),
+						criteriaBuilder.literal(params.getFinalDate())));
 	}
 
 }

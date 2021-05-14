@@ -1,6 +1,7 @@
 package br.org.ccb.sgh.controller;
 
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -81,8 +82,6 @@ class RoomControllerTest {
 	@Test
 	void findAllSuccessTest() throws Exception {
 		List<Room> roomList = TestUtils.createRoomList();
-		roomList.get(0).setAvailable(true);
-		roomList.get(1).setAvailable(false);
 		when(this.roomService.findAll(any(RoomRequestParamsDto.class))).thenReturn(new PageImpl<>(roomList));
 		this.mockMvc.perform(get(URL).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 				.andExpect(jsonPath("$.content", hasSize(2))).andExpect(jsonPath("$.content.[0].id", is(1)))
@@ -90,12 +89,12 @@ class RoomControllerTest {
 				.andExpect(jsonPath("$.content.[0].floor", is("1")))
 				.andExpect(jsonPath("$.content.[0].number", is("1A")))
 				.andExpect(jsonPath("$.content.[0].numberOfBeds", is(4)))
-				.andExpect(jsonPath("$.content.[0].available", is(true))).andExpect(jsonPath("$.content.[1].id", is(2)))
+				.andExpect(jsonPath("$.content.[0].status", nullValue())).andExpect(jsonPath("$.content.[1].id", is(2)))
 				.andExpect(jsonPath("$.content.[1].name", is("Room 2")))
 				.andExpect(jsonPath("$.content.[1].floor", is("1")))
 				.andExpect(jsonPath("$.content.[1].number", is("1B")))
 				.andExpect(jsonPath("$.content.[1].numberOfBeds", is(2)))
-				.andExpect(jsonPath("$.content.[1].available", is(false)));
+				.andExpect(jsonPath("$.content.[1].status", nullValue()));
 	}
 
 	@Test
@@ -112,12 +111,11 @@ class RoomControllerTest {
 	@Test
 	void findByIdSuccessTest() throws Exception {
 		Room room = TestUtils.createRoomList().get(0);
-		room.setAvailable(true);
 		when(this.roomService.byId(1l)).thenReturn(room);
 		this.mockMvc.perform(get(BY_ID).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 				.andExpect(jsonPath("id", is(1))).andExpect(jsonPath("name", is("Room 1")))
 				.andExpect(jsonPath("floor", is("1"))).andExpect(jsonPath("number", is("1A")))
-				.andExpect(jsonPath("numberOfBeds", is(4))).andExpect(jsonPath("available", is(true)));
+				.andExpect(jsonPath("numberOfBeds", is(4))).andExpect(jsonPath("status", nullValue()));
 	}
 
 	@Test

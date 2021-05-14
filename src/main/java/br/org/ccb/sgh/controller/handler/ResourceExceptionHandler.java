@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import br.org.ccb.sgh.exception.InvalidParamException;
 import br.org.ccb.sgh.exception.StandardError;
 
 @ControllerAdvice
@@ -66,14 +67,26 @@ public class ResourceExceptionHandler {
 	@ExceptionHandler(MethodArgumentTypeMismatchException.class)
 	public ResponseEntity<StandardError> methodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e, HttpServletRequest request) {
 		
-		StandardError err = new StandardError(System.currentTimeMillis(), HttpStatus.BAD_REQUEST.value(), String.format("Valor incorreto passado para o parâmetro: %s", e.getParameter().getParameterName()), e.getMessage(), request.getRequestURI());
+		StandardError err = new StandardError(System.currentTimeMillis(), HttpStatus.BAD_REQUEST.value(), String.format("Valor incorreto passado para o parâmetro: %s", e.getParameter().getParameterName()), e.getMessage().trim(), request.getRequestURI());
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(err);
 	}
 	
 	@ExceptionHandler(IllegalArgumentException.class)
 	public ResponseEntity<StandardError> illegalArgumentException(IllegalArgumentException e, HttpServletRequest request) {
 		
-		StandardError err = new StandardError(System.currentTimeMillis(), HttpStatus.BAD_REQUEST.value(), "Valor incorreto passado. Verifique os dados e tente novamente", e.getMessage(), request.getRequestURI());
+		StandardError err = new StandardError(System.currentTimeMillis(), HttpStatus.BAD_REQUEST.value(),
+				"Valor incorreto passado: " + e.getMessage().substring(e.getMessage().lastIndexOf(".") + 1)
+						+ ". Verifique os dados e tente novamente",
+						e.getMessage(), request.getRequestURI());
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(err);
+	}
+	
+	@ExceptionHandler(InvalidParamException.class)
+	public ResponseEntity<StandardError> invalidParamException(InvalidParamException e, HttpServletRequest request) {
+
+		StandardError err = new StandardError(System.currentTimeMillis(), HttpStatus.BAD_REQUEST.value(),
+				String.format("Valor incorreto passado para o parâmetro: %s: %s. Verifique os dados e tente novamente", e.getParamName(), e.getParamValue()),
+				e.getMessage(), String.format("%s?%s", request.getRequestURI(), request.getQueryString()));
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(err);
 	}
 	

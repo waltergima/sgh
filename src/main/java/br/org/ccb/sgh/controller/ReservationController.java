@@ -39,10 +39,10 @@ public class ReservationController {
 	@CrossOrigin(origins = "*", methods = { RequestMethod.GET, RequestMethod.OPTIONS })
 	@GetMapping
 	public ResponseEntity<Page<Reservation>> findAll(@RequestParam(value = "id", required = false) Long id,
-			@DateTimeFormat(pattern = "dd/MM/yyyy") @RequestParam(value = "initialDate", required = false) LocalDate initialDate,
-			@DateTimeFormat(pattern = "dd/MM/yyyy") @RequestParam(value = "finalDate", required = false) LocalDate finalDate,
-			@DateTimeFormat(pattern = "dd/MM/yyyy") @RequestParam(value = "checkinDate", required = false) LocalDate checkinDate,
-			@DateTimeFormat(pattern = "dd/MM/yyyy") @RequestParam(value = "checkoutDate", required = false) LocalDate checkoutDate,
+			@DateTimeFormat(pattern = "yyyy-MM-dd") @RequestParam(value = "initialDate", required = false) LocalDate initialDate,
+			@DateTimeFormat(pattern = "yyyy-MM-dd") @RequestParam(value = "finalDate", required = false) LocalDate finalDate,
+			@DateTimeFormat(pattern = "yyyy-MM-dd") @RequestParam(value = "checkinDate", required = false) LocalDate checkinDate,
+			@DateTimeFormat(pattern = "yyyy-MM-dd") @RequestParam(value = "checkoutDate", required = false) LocalDate checkoutDate,
 			@RequestParam(value = "roomId", required = false) Long roomId,
 			@RequestParam(value = "roomName", required = false) String roomName,
 			@RequestParam(value = "guestId", required = false) Long guestId,

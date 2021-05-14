@@ -68,7 +68,7 @@ class GuestControllerTest {
 				.perform(post(URL).content(new ObjectMapper().writeValueAsString(TestUtils.createGuestDto()))
 						.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isCreated()).andExpect(header().exists("location"))
-				.andExpect(header().string("location", endsWith(URL.concat("/4"))));
+				.andExpect(header().string("location", endsWith(URL.concat("/8"))));
 	}
 	
 	@Test
@@ -503,7 +503,12 @@ class GuestControllerTest {
 	
 	@Test
 	void deleteSuccessTest() throws Exception {
-		String byId = URL.concat("/3");
+		this.mockMvc
+		.perform(post(URL).content(new ObjectMapper().writeValueAsString(TestUtils.createGuestDto()))
+				.contentType(MediaType.APPLICATION_JSON))
+		.andExpect(status().isCreated()).andExpect(header().exists("location"))
+		.andExpect(header().string("location", endsWith(URL.concat("/8"))));
+		String byId = URL.concat("/8");
 		this.mockMvc
 				.perform(delete(byId))
 				.andExpect(status().isNoContent());

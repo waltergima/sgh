@@ -2,9 +2,11 @@ package br.org.ccb.sgh.controller;
 
 import java.net.URI;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import br.org.ccb.sgh.entity.Room;
+import br.org.ccb.sgh.exception.InvalidParamException;
 import br.org.ccb.sgh.http.dto.RoomDto;
 import br.org.ccb.sgh.http.dto.RoomRequestParamsDto;
 import br.org.ccb.sgh.service.RoomService;
@@ -41,18 +44,20 @@ public class RoomController {
 			@RequestParam(value = "floor", required = false) String floor,
 			@RequestParam(value = "number", required = false) String number,
 			@RequestParam(value = "numberOfBeds", required = false) Integer numberOfBeds,
-			@RequestParam(value = "available", required = false) Boolean available,
-			@RequestParam(value = "initialDate", required = false) LocalDate initialDate,
-			@RequestParam(value = "finalDate", required = false) LocalDate finalDate,
+			@RequestParam(value = "status", required = false) String status,
+			@RequestParam(value = "initialDate", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate initialDate,
+			@RequestParam(value = "finalDate", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate finalDate,
 			@RequestParam(value = "reservationId", required = false) Long reservationId,
 			@RequestParam(value = "supportHouseId", required = false) Long supportHouseId,
 			@RequestParam(value = "offset", defaultValue = "0") Integer offset,
 			@RequestParam(value = "limit", defaultValue = "10") Integer limit,
 			@RequestParam(value = "orderBy", defaultValue = "id") String orderBy,
 			@RequestParam(value = "direction", defaultValue = "ASC") String direction) {
+		
+		validateParams(status, initialDate, finalDate);
 
 		return ResponseEntity.ok(this.roomService.findAll(RoomRequestParamsDto.builder().id(id).name(name).floor(floor)
-				.number(number).numberOfBeds(numberOfBeds).available(available).initalDate(initialDate).finalDate(finalDate)
+				.number(number).numberOfBeds(numberOfBeds).status(status).initialDate(initialDate).finalDate(finalDate)
 				.reservationId(reservationId).supportHouseId(supportHouseId).offset(offset).limit(limit)
 				.orderBy(orderBy).direction(direction).build()));
 	}
@@ -85,5 +90,27 @@ public class RoomController {
 	public ResponseEntity<Void> remove(@PathVariable Long id) {
 		this.roomService.remove(id);
 		return ResponseEntity.noContent().build();
+	}
+	
+	private void validateParams(String status, LocalDate initialDate, LocalDate finalDate) {
+		String message = "You must inform both initialDate and finalDate";
+		
+		if (status != null && (initialDate == null || finalDate == null)) {
+			throw new InvalidParamException("status", status, message.concat(" when status is informed"));
+		}
+		
+		if (initialDate != null && finalDate == null) {
+			throw new InvalidParamException("initialDate",
+					initialDate.format(DateTimeFormatter.ofPattern("YYYY-MM-dd")), message);
+		}
+		if (initialDate == null && finalDate != null) {
+			throw new InvalidParamException("finalDate", finalDate.format(DateTimeFormatter.ofPattern("YYYY-MM-dd")),
+					message);
+		}
+		
+		if(finalDate != null && finalDate.isBefore(initialDate)) {
+			throw new InvalidParamException("finalDate", finalDate.format(DateTimeFormatter.ofPattern("YYYY-MM-dd")),
+					"initialDate must be before finalDate");
+		}
 	}
 }

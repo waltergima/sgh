@@ -22,6 +22,7 @@ import org.hibernate.annotations.LazyCollectionOption;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import br.org.ccb.sgh.http.dto.RoomDto;
+import br.org.ccb.sgh.util.RoomStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -55,7 +56,7 @@ public class Room {
 	@Fetch(FetchMode.JOIN)
 	private List<Reservation> reservations;
 	@Transient
-	private Boolean available;
+	private RoomStatus status;
 
 	public static Room fromDto(Long id, Long supportHouseId, RoomDto roomDto) {
 		return Room.builder().id(id).name(roomDto.getName()).floor(roomDto.getFloor()).number(roomDto.getNumber())

@@ -107,11 +107,9 @@ CREATE TABLE Reservation (
   status varchar(255) DEFAULT NULL,
   contact_id bigint(20) DEFAULT NULL,
   room_id bigint(20) DEFAULT NULL,
-  support_house_id bigint(20) DEFAULT NULL,
   test date DEFAULT NULL,
   PRIMARY KEY (id),
   UNIQUE KEY UK_5xgbh4nvscg4n4scng5fxr4gx (contact_id),
-  CONSTRAINT FK7xt85vcwflakke2cqdx8r2b46 FOREIGN KEY (support_house_id) REFERENCES SupportHouse (id),
   CONSTRAINT FKprp9xfstf1buic0e0mg1tndfu FOREIGN KEY (room_id) REFERENCES Room (id),
   CONSTRAINT FKqmnw4fdgia8xvdpqny80t288j FOREIGN KEY (contact_id) REFERENCES Contact (id)
 );

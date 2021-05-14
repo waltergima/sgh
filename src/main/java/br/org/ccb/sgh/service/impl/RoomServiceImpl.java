@@ -1,6 +1,8 @@
 package br.org.ccb.sgh.service.impl;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
@@ -11,12 +13,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
+import br.org.ccb.sgh.entity.Reservation;
 import br.org.ccb.sgh.entity.Room;
 import br.org.ccb.sgh.http.dto.RoomDto;
 import br.org.ccb.sgh.http.dto.RoomRequestParamsDto;
 import br.org.ccb.sgh.repository.RoomRepository;
 import br.org.ccb.sgh.repository.specification.RoomSpecification;
 import br.org.ccb.sgh.service.RoomService;
+import br.org.ccb.sgh.util.ReservationStatus;
+import br.org.ccb.sgh.util.RoomStatus;
 
 @Service
 public class RoomServiceImpl implements RoomService {
@@ -33,17 +38,16 @@ public class RoomServiceImpl implements RoomService {
 			throw new EmptyResultDataAccessException(requestParams.getLimit());
 		}
 		
-		setAvailability(requestParams, rooms);
+		if(requestParams.getInitialDate() != null && requestParams.getFinalDate() != null) {
+			setAvailability(requestParams, rooms);
+		}
 
 		return rooms;
 	}
 
 	@Override
 	public Room byId(Long id) {
-		return roomRepository.findById(id).map(room -> {
-			room.setAvailable(roomIsAvailable(room));
-			return room;
-		}).orElseThrow(() -> new ObjectNotFoundException(id, Room.class.getName()));
+		return roomRepository.findById(id).orElseThrow(() -> new ObjectNotFoundException(id, Room.class.getName()));
 	}
 
 	@Override
@@ -67,20 +71,48 @@ public class RoomServiceImpl implements RoomService {
 
 	private void setAvailability(RoomRequestParamsDto requestParams, Page<Room> rooms) {
 		rooms.getContent().forEach(room -> {
-			if (requestParams.getAvailable() != null) {
-				room.setAvailable(requestParams.getAvailable());
+			if(requestParams.getStatus() != null) {
+				room.setStatus(RoomStatus.valueOf(requestParams.getStatus()));
 			} else {
-				room.setAvailable(roomIsAvailable(room));
+				room.setStatus(getRoomStatus(room, requestParams.getInitialDate(), requestParams.getFinalDate()));
 			}
 		});
 	}
 
-	public Boolean roomIsAvailable(Room room) {
-		LocalDate date = LocalDate.now();
-		return (ObjectUtils.isEmpty(room.getReservations()) || room.getReservations().stream()
-				.noneMatch(reservation -> !date.isBefore(reservation.getInitialDate())
-						&& (reservation.getCheckoutDate() == null
-								|| date.isBefore(reservation.getCheckoutDate()))));
+	public RoomStatus getRoomStatus(Room room, LocalDate initialDate, LocalDate finalDate) {
+		if(ObjectUtils.isEmpty(room.getReservations())) {
+			return RoomStatus.AVAILABLE;
+		}
+		List<Reservation> reservations = room.getReservations().stream()
+				.filter(reservation -> reservation.getStatus().equals(ReservationStatus.CONFIRMED))
+				.collect(Collectors.toList());
+		
+		for (Reservation reservation : reservations) {
+			if (reservation.getCheckinDate() != null && (
+					isDateBetweenCheckinAndCheckoutDates(initialDate, reservation)
+					|| isDateBetweenCheckinAndCheckoutDates(finalDate, reservation)
+					|| (!reservation.getCheckinDate().isBefore(initialDate)
+							&& !reservation.getCheckinDate().isAfter(finalDate)))) {
+				return RoomStatus.OCCUPIED;
+			}
+			
+			if (reservation.getCheckoutDate() == null && (isDateBetweenInitialAndFinalDates(initialDate, reservation)
+					|| isDateBetweenInitialAndFinalDates(finalDate, reservation)
+					|| (!reservation.getInitialDate().isBefore(initialDate)
+							&& !reservation.getInitialDate().isAfter(finalDate)))) {
+				return RoomStatus.RESERVED;
+			}
+		}
+		return RoomStatus.AVAILABLE;
 	}
-
+	
+	private Boolean isDateBetweenCheckinAndCheckoutDates(LocalDate date, Reservation reservation) {
+		return !date.isBefore(reservation.getCheckinDate())
+				&& (reservation.getCheckoutDate() == null || !date.isAfter(reservation.getCheckoutDate()));
+	}
+	
+	private Boolean isDateBetweenInitialAndFinalDates(LocalDate date, Reservation reservation) {
+		return !date.isBefore(reservation.getInitialDate())
+				&& !date.isAfter(reservation.getFinalDate());
+	}
 }

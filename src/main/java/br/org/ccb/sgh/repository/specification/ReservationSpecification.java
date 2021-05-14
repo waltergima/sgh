@@ -12,8 +12,8 @@ import javax.persistence.criteria.Root;
 import org.springframework.data.jpa.domain.Specification;
 
 import br.org.ccb.sgh.entity.Reservation;
-import br.org.ccb.sgh.entity.Status;
 import br.org.ccb.sgh.http.dto.ReservationRequestParamsDto;
+import br.org.ccb.sgh.util.ReservationStatus;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
@@ -67,7 +67,7 @@ public class ReservationSpecification implements Specification<Reservation> {
 					params.getSupportHouseId()));
 		}
 		if (params.getStatus() != null) {
-			predicates.add(criteriaBuilder.equal(root.get("status"), Status.valueOf(params.getStatus())));
+			predicates.add(criteriaBuilder.equal(root.get("status"), ReservationStatus.valueOf(params.getStatus())));
 		}
 
 		return query.where(criteriaBuilder.and(predicates.toArray(new Predicate[0]))).distinct(true).getRestriction();
