@@ -47,8 +47,8 @@ public class GuestController {
 	@Operation
 	public ResponseEntity<Page<Guest>> findAll(@RequestParam(value = "id", required = false) Long id,
 			@RequestParam(value = "name", required = false) String name,
-			@DateTimeFormat(pattern = "dd/MM/yyyy") @RequestParam(value = "dateOfBirth", required = false) LocalDate dateOfBirth,
-			@DateTimeFormat(pattern = "dd/MM/yyyy") @RequestParam(value = "dateOfBaptism", required = false) LocalDate dateOfBaptism,
+			@DateTimeFormat(pattern = "yyyy-MM-dd") @RequestParam(value = "dateOfBirth", required = false) LocalDate dateOfBirth,
+			@DateTimeFormat(pattern = "yyyy-MM-dd") @RequestParam(value = "dateOfBaptism", required = false) LocalDate dateOfBaptism,
 			@RequestParam(value = "rg", required = false) @Size(min = 1, max = 9) String rg,
 			@RequestParam(value = "cpf", required = false) @CPF String cpf,
 			@RequestParam(value = "phoneNumber", required = false) @Size(min = 1, max = 11) String phoneNumber,

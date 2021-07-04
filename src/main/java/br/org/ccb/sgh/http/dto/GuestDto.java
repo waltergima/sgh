@@ -35,10 +35,10 @@ public class GuestDto implements Serializable {
 	private Long type; 
 	@Valid
 	private AddressDto address;
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@JsonDeserialize(using = LocalDateDeserializer.class)
 	@JsonSerialize(using = LocalDateSerializer.class)
-	@DateTimeFormat(pattern = "dd/MM/yyyy")
+	@DateTimeFormat(pattern = "yyyy-MM-dd")
 	private LocalDate dateOfBirth;
 	@Size(min = 1, max = 9)
 	private String rg;
@@ -50,10 +50,10 @@ public class GuestDto implements Serializable {
 	private String celNumber;
 	private Boolean ministery;
 	private Boolean baptized;
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@JsonDeserialize(using = LocalDateDeserializer.class)
 	@JsonSerialize(using = LocalDateSerializer.class)
-	@DateTimeFormat(pattern = "dd/MM/yyyy")
+	@DateTimeFormat(pattern = "yyyy-MM-dd")
 	private LocalDate dateOfBaptism;
 	@Size(min = 1, max = 255)
 	private String prayingHouse;
