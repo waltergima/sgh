@@ -12,6 +12,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 
 import org.hibernate.annotations.Fetch;
@@ -38,8 +39,8 @@ public class Guest {
 	private Long id;
 	@Column
 	private String name;
-	@OneToOne(optional = false, fetch = FetchType.EAGER)
-	@JoinColumn(name = "type_id", referencedColumnName = "id")
+	@ManyToOne(optional = false, fetch = FetchType.EAGER)
+	@JoinColumn(name = "type_id", referencedColumnName = "id", unique = false)
 	@Fetch(FetchMode.JOIN)
 	private GuestType type;
 	@OneToOne(orphanRemoval = true, optional = false, fetch = FetchType.LAZY, cascade = CascadeType.ALL)
