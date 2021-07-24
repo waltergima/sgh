@@ -208,7 +208,7 @@ class GuestControllerTest {
 	
 	@Test
 	void findAllFilteringByDateOfBirthSuccessTest() throws Exception {
-		this.mockMvc.perform(get(URL.concat("?dateOfBirth=11/12/2000")).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+		this.mockMvc.perform(get(URL.concat("?dateOfBirth=2000-12-11")).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 				.andExpect(jsonPath("$.content", hasSize(equalTo(1)))).andExpect(jsonPath("$.content.[0].id", is(1)))
 				.andExpect(jsonPath("$.content.[0].name", is("Guest 1")))
 				.andExpect(jsonPath("$.content.[0].dateOfBirth[0]", is(2000)))
@@ -236,7 +236,7 @@ class GuestControllerTest {
 	
 	@Test
 	void findAllFilteringByDateOfBaptismSuccessTest() throws Exception {
-		this.mockMvc.perform(get(URL.concat("?dateOfBaptism=01/01/2019")).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+		this.mockMvc.perform(get(URL.concat("?dateOfBaptism=2019-01-01")).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 				.andExpect(jsonPath("$.content", hasSize(equalTo(1)))).andExpect(jsonPath("$.content.[0].id", is(1)))
 				.andExpect(jsonPath("$.content.[0].name", is("Guest 1")))
 				.andExpect(jsonPath("$.content.[0].dateOfBirth[0]", is(2000)))

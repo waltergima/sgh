@@ -29,16 +29,16 @@ public class ReservationSpecification implements Specification<Reservation> {
 			predicates.add(criteriaBuilder.equal(root.get("id"), params.getId()));
 		}
 		if (params.getInitialDate() != null) {
-			predicates.add(criteriaBuilder.equal(root.get("initialDate"), params.getInitialDate()));
+			predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("initialDate"), params.getInitialDate()));
 		}
 		if (params.getFinalDate() != null) {
-			predicates.add(criteriaBuilder.equal(root.get("finalDate"), params.getFinalDate()));
+			predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("finalDate"), params.getFinalDate()));
 		}
 		if (params.getCheckinDate() != null) {
-			predicates.add(criteriaBuilder.equal(root.get("checkinDate"), params.getCheckinDate()));
+			predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("checkinDate"), params.getCheckinDate()));
 		}
 		if (params.getCheckoutDate() != null) {
-			predicates.add(criteriaBuilder.equal(root.get("checkoutDate"), params.getCheckoutDate()));
+			predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("checkoutDate"), params.getCheckoutDate()));
 		}
 		if (params.getRoomId() != null) {
 			predicates.add(criteriaBuilder.equal(root.get("room").get("id"), params.getRoomId()));
