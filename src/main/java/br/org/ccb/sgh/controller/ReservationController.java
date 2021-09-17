@@ -2,6 +2,7 @@ package br.org.ccb.sgh.controller;
 
 import java.net.URI;
 import java.time.LocalDate;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -23,6 +24,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import br.org.ccb.sgh.entity.Reservation;
+import br.org.ccb.sgh.http.dto.ContactDto;
+import br.org.ccb.sgh.http.dto.GuestDto;
+import br.org.ccb.sgh.http.dto.ObservationDto;
+import br.org.ccb.sgh.http.dto.ReservationCheckinCheckoutDto;
 import br.org.ccb.sgh.http.dto.ReservationDto;
 import br.org.ccb.sgh.http.dto.ReservationRequestParamsDto;
 import br.org.ccb.sgh.http.dto.ReservationStatusDto;
@@ -93,6 +98,46 @@ public class ReservationController {
 	@PatchMapping(value="/{id}/status")
 	public ResponseEntity<Void> updateStatus(@PathVariable Long id, @Validated @RequestBody ReservationStatusDto reservationsStatusDto) {
 		this.reservationService.updateStatus(id, reservationsStatusDto);
+
+		return ResponseEntity.noContent().build();
+	}
+	
+	@CrossOrigin(origins = "*", methods = { RequestMethod.PATCH, RequestMethod.OPTIONS })
+	@PatchMapping(value="/{id}/checkin")
+	public ResponseEntity<Void> checkin(@PathVariable Long id, @Validated @RequestBody ReservationCheckinCheckoutDto reservationsCheckinDto) {
+		this.reservationService.checkin(id, reservationsCheckinDto);
+
+		return ResponseEntity.noContent().build();
+	}
+	
+	@CrossOrigin(origins = "*", methods = { RequestMethod.PATCH, RequestMethod.OPTIONS })
+	@PatchMapping(value="/{id}/checkout")
+	public ResponseEntity<Void> checkout(@PathVariable Long id, @Validated @RequestBody ReservationCheckinCheckoutDto reservationsCheckinDto) {
+		this.reservationService.checkout(id, reservationsCheckinDto);
+
+		return ResponseEntity.noContent().build();
+	}
+	
+	@CrossOrigin(origins = "*", methods = { RequestMethod.PATCH, RequestMethod.OPTIONS })
+	@PatchMapping(value="/{id}/contact")
+	public ResponseEntity<Void> contact(@PathVariable Long id, @Validated @RequestBody ContactDto contactDto) {
+		this.reservationService.updateContact(id, contactDto);
+
+		return ResponseEntity.noContent().build();
+	}
+	
+	@CrossOrigin(origins = "*", methods = { RequestMethod.PATCH, RequestMethod.OPTIONS })
+	@PatchMapping(value="/{id}/observation")
+	public ResponseEntity<Void> observation(@PathVariable Long id, @Validated @RequestBody ObservationDto observationDto) {
+		this.reservationService.updateObservation(id, observationDto.getObservation());
+
+		return ResponseEntity.noContent().build();
+	}
+	
+	@CrossOrigin(origins = "*", methods = { RequestMethod.PATCH, RequestMethod.OPTIONS })
+	@PostMapping(value="/{id}/guests")
+	public ResponseEntity<Void> guests(@PathVariable Long id, @Validated @RequestBody List<GuestDto> guestDto) {
+		this.reservationService.addGuests(id, guestDto);
 
 		return ResponseEntity.noContent().build();
 	}

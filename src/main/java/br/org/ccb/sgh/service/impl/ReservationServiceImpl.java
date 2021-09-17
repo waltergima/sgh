@@ -1,5 +1,8 @@
 package br.org.ccb.sgh.service.impl;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import javax.transaction.Transactional;
 
 import org.hibernate.ObjectNotFoundException;
@@ -8,7 +11,12 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
+import br.org.ccb.sgh.entity.Contact;
+import br.org.ccb.sgh.entity.Guest;
 import br.org.ccb.sgh.entity.Reservation;
+import br.org.ccb.sgh.http.dto.ContactDto;
+import br.org.ccb.sgh.http.dto.GuestDto;
+import br.org.ccb.sgh.http.dto.ReservationCheckinCheckoutDto;
 import br.org.ccb.sgh.http.dto.ReservationDto;
 import br.org.ccb.sgh.http.dto.ReservationRequestParamsDto;
 import br.org.ccb.sgh.http.dto.ReservationStatusDto;
@@ -61,10 +69,49 @@ public class ReservationServiceImpl implements ReservationService {
 
 		return this.reservationRepository.save(reservation);
 	}
-
+	
 	@Override
 	public void remove(Long id) {
 		this.reservationRepository.deleteById(id);
+	}
+
+	@Override
+	public void checkin(Long id, ReservationCheckinCheckoutDto reservationCheckinCheckoutDto) {
+		this.reservationRepository.checkin(id, reservationCheckinCheckoutDto.getDate());
+	}
+	
+	@Override
+	public void checkout(Long id, ReservationCheckinCheckoutDto reservationCheckinCheckoutDto) {
+		this.reservationRepository.checkout(id, reservationCheckinCheckoutDto.getDate());
+	}
+
+	@Override
+	@Transactional
+	public void updateContact(Long id, ContactDto contactDto) {
+		Reservation reservation = this.byId(id);
+		reservation.setContact(Contact.fromDto(null, contactDto));
+
+		this.reservationRepository.save(reservation);
+	}
+
+	@Override
+	@Transactional
+	public void updateObservation(Long id, String observation) {
+		Reservation reservation = this.byId(id);
+		reservation.setObservation(observation);
+
+		this.reservationRepository.save(reservation);
+	}
+
+	@Override
+	@Transactional
+	public void addGuests(Long id, List<GuestDto> guestDto) {
+		Reservation reservation = this.byId(id);
+		reservation.getGuests()
+				.addAll(guestDto.stream().map(guest -> Guest.fromDto(null, null, guest)).collect(Collectors.toList()));
+
+		this.reservationRepository.save(reservation);
+		
 	}
 
 }
