@@ -56,7 +56,7 @@ public class Reservation {
 	@Fetch(FetchMode.JOIN)
 	private Room room;
 	@JsonManagedReference
-	@ManyToMany(fetch = FetchType.EAGER, cascade = { CascadeType.ALL })
+	@ManyToMany(fetch = FetchType.EAGER, cascade = { CascadeType.MERGE })
 	@JoinTable(name = "reservations_guests", joinColumns = @JoinColumn(name = "reservation_id", referencedColumnName = "id"), inverseJoinColumns = @JoinColumn(name = "guest_id", referencedColumnName = "id"))
 	@Fetch(FetchMode.JOIN)
 	@JsonIgnoreProperties(value = "reservations")
